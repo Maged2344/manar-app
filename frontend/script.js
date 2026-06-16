@@ -29,8 +29,21 @@ document.querySelectorAll('.nav-links a').forEach(l => l.addEventListener('click
 // Scroll
 window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50); });
 
-// Track visit
-fetch(API_URL + '/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: window.location.pathname }) }).catch(() => {});
+function getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('device_id');
+    if (!deviceId) {
+        deviceId = 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('device_id', deviceId);
+    }
+    return deviceId;
+}
+
+// Track one unique visit per device/IP per day (handled server-side)
+fetch(API_URL + '/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: window.location.pathname, deviceId: getOrCreateDeviceId() })
+}).catch(() => {});
 
 // Auth - User Dropdown
 function checkAuth() {

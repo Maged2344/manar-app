@@ -39,14 +39,14 @@ test.describe('Form Submissions @forms @smoke', () => {
   });
 
   test('Apply form submits successfully', async ({ page }) => {
-    await page.goto('/apply.html');
+    await page.goto('/apply.html', { waitUntil: 'domcontentloaded' });
     await page.fill('#applyName', 'E2E Test Client');
     await page.fill('#applyEmail', 'e2eclient@example.com');
     await page.fill('#applyPhone', '+201111111111');
     await page.fill('#applyCompany', 'Test Company');
     await page.selectOption('#applyService', { index: 1 });
-    await page.fill('#applyBudget', '$5000-$10000');
-    await page.fill('#applyTimeline', '2 months');
+    await page.selectOption('#applyBudget', { index: 1 });
+    await page.selectOption('#applyTimeline', { index: 1 });
     await page.fill('#applyDetails', 'This is an automated e2e test application submission');
     await page.click('#applyForm button[type="submit"]');
     await page.waitForTimeout(2000);
@@ -57,7 +57,7 @@ test.describe('Form Submissions @forms @smoke', () => {
   });
 
   test('Quick contact form on homepage works', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const form = page.locator('#quickContactForm');
     await form.locator('#qcName').fill('Quick Test');
     await form.locator('#qcEmail').fill('quicktest@example.com');

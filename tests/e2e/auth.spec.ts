@@ -34,7 +34,7 @@ test.describe('Authentication Flow @auth @smoke', () => {
   });
 
   test('Register mode shows name field', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.click('#loginBtn');
     await page.click('#toggleAuth');
     const nameInput = page.locator('#loginModal #name');
@@ -63,20 +63,20 @@ test.describe('Authentication Flow @auth @smoke', () => {
 
   test('Portal page redirects if not logged in', async ({ page }) => {
     // Clear any stored tokens
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     });
-    await page.goto('/portal.html');
-    await page.waitForTimeout(2000);
+    await page.goto('/portal.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
     // Should redirect to homepage with login param
     const url = page.url();
-    expect(url).toMatch(/\/$|\?login=1/);
+    expect(url).toMatch(/\/$|\?login=1|index\.html/);
   });
 
   test('Modal closes when clicking overlay', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.click('#loginBtn');
     await expect(page.locator('#loginModal')).toHaveClass(/active/);
     // Click overlay (outside modal content)

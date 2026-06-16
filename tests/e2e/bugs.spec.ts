@@ -13,7 +13,7 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
   });
 
   test('No overlapping elements in navbar', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const navbar = page.locator('.navbar');
     const navBox = await navbar.boundingBox();
     expect(navBox).not.toBeNull();
@@ -87,7 +87,7 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
   });
 
   test('Apply form has all required fields', async ({ page }) => {
-    await page.goto('/apply.html');
+    await page.goto('/apply.html', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#applyName, input[name="name"]').first()).toBeVisible();
     await expect(page.locator('#applyEmail, input[name="email"]').first()).toBeVisible();
     await expect(page.locator('#applyPhone, input[name="phone"]').first()).toBeVisible();
@@ -96,7 +96,7 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
   });
 
   test('Contact form validation works', async ({ page }) => {
-    await page.goto('/contact.html');
+    await page.goto('/contact.html', { waitUntil: 'domcontentloaded' });
     const nameInput = page.locator('#contactName, input[name="name"]').first();
     const isRequired = await nameInput.getAttribute('required');
     expect(isRequired).not.toBeNull();
@@ -104,7 +104,7 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
 
   test('Team cards dont overflow on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const teamGrid = page.locator('.home-team-grid');
     const gridBox = await teamGrid.boundingBox();
     const containerWidth = 1200; // max-width
@@ -113,7 +113,7 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
 
   test('Process steps are visible on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const steps = page.locator('.process-step');
     const count = await steps.count();
     expect(count).toBe(4);
@@ -123,13 +123,13 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
   });
 
   test('Quick contact form is visible on homepage', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const form = page.locator('#quickContactForm');
     await expect(form).toBeVisible();
   });
 
   test('Hero stats are visible and have numbers', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000); // Wait for counter animation
     const stats = page.locator('.stat-number');
     const count = await stats.count();
@@ -141,14 +141,14 @@ test.describe('Visual & UX Bug Checks @bugs', () => {
   });
 
   test('Navbar becomes fixed on scroll', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const navbar = page.locator('.navbar');
     const position = await navbar.evaluate(el => window.getComputedStyle(el).position);
     expect(position).toBe('fixed');
   });
 
   test('No z-index issues - modal appears above content', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.click('#loginBtn');
     const modal = page.locator('#loginModal');
     const zIndex = await modal.evaluate(el => window.getComputedStyle(el).zIndex);
@@ -171,7 +171,7 @@ test.describe('Mobile Bug Checks @bugs', () => {
 
   test('Mobile - Hero section fits screen', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const hero = page.locator('.hero');
     const heroBox = await hero.boundingBox();
     expect(heroBox!.width).toBeLessThanOrEqual(375);
@@ -190,7 +190,7 @@ test.describe('Mobile Bug Checks @bugs', () => {
 
   test('Mobile - Nav toggle closes after selection', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.click('.nav-toggle');
     await page.click('.nav-links a:has-text("Services")');
     // After clicking a link, nav should close

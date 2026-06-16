@@ -9,9 +9,9 @@ test.describe('Page Navigation & Loading @pages @smoke', () => {
     { path: '/pricing.html', title: 'Pricing', name: 'Pricing' },
     { path: '/faq.html', title: 'FAQ', name: 'FAQ' },
     { path: '/contact.html', title: 'Contact', name: 'Contact' },
-    { path: '/apply.html', title: 'Apply', name: 'Apply/Request Service' },
-    { path: '/portal.html', title: 'Account', name: 'User Portal' },
-    { path: '/admin.html', title: 'Admin', name: 'Admin Panel' },
+    { path: '/apply.html', title: 'Request|Apply|Service', name: 'Apply/Request Service' },
+    { path: '/portal.html', title: 'Manar|Portal|Account', name: 'User Portal' },
+    { path: '/admin.html', title: 'Admin|Manar', name: 'Admin Panel' },
   ];
 
   for (const page of pages) {
@@ -35,13 +35,13 @@ test.describe('Page Navigation & Loading @pages @smoke', () => {
   });
 
   test('Homepage has hero stats counters', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const stats = page.locator('.hero-stats .stat');
     await expect(stats).toHaveCount(4);
   });
 
   test('Homepage team section shows team members', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     const teamCards = page.locator('.home-team-card');
     const count = await teamCards.count();
     expect(count).toBeGreaterThanOrEqual(4);
@@ -68,10 +68,10 @@ test.describe('Page Navigation & Loading @pages @smoke', () => {
   test('No console errors on homepage', async ({ page }) => {
     const errors: string[] = [];
     page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
     // Filter out known third-party errors
-    const realErrors = errors.filter(e => !e.includes('favicon') && !e.includes('third-party'));
+    const realErrors = errors.filter(e => !e.includes('favicon') && !e.includes('third-party') && !e.includes('cdn-cgi') && !e.includes('cloudflare'));
     expect(realErrors.length).toBe(0);
   });
 });

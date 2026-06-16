@@ -73,6 +73,9 @@ const applicationSchema = new mongoose.Schema({
 
 const visitSchema = new mongoose.Schema({
   page: { type: String, default: '/' },
+  visitorKey: { type: String, required: true },
+  deviceId: { type: String, default: '' },
+  ip: { type: String, default: '' },
   date: { type: String, required: true }, // YYYY-MM-DD
   createdAt: { type: Date, default: Date.now }
 });
@@ -100,6 +103,14 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded && typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || '';
+}
+
 // ===== Routes =====
 
 // Health
@@ -112,8 +123,17 @@ app.get('/metrics', async (req, res) => { res.set('Content-Type', promClient.reg
 app.post('/api/track', async (req, res) => {
   try {
     const page = req.body.page || '/';
+    const rawDeviceId = req.body.deviceId || '';
+    const deviceId = typeof rawDeviceId === 'string' ? rawDeviceId.slice(0, 120) : '';
+    const ip = getClientIp(req);
+    const visitorKey = deviceId || ip || 'unknown';
     const today = new Date().toISOString().split('T')[0];
-    await Visit.create({ page, date: today });
+    // Count one visit per visitor per day (prevents refresh from inflating visits).
+    await Visit.findOneAndUpdate(
+      { date: today, visitorKey },
+      { $setOnInsert: { page, date: today, visitorKey, deviceId, ip } },
+      { upsert: true, new: false }
+    );
     res.json({ ok: true });
   } catch (e) { res.json({ ok: true }); }
 });
@@ -196,6 +216,38 @@ app.get('/api/auth/applications', authenticateToken, async (req, res) => {
   } catch (e) { res.status(500).json({ error: 'Failed to get applications' }); }
 });
 
+app.patch('/api/auth/applications/:id', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const appRecord = await Application.findById(req.params.id);
+    if (!appRecord) return res.status(404).json({ error: 'Application not found' });
+    if (appRecord.email !== user.email) return res.status(403).json({ error: 'Not allowed to edit this application' });
+
+    // Allow edits until admins start processing or finalize the request.
+    const lockedStatuses = ['in-progress', 'approved', 'completed', 'rejected'];
+    if (lockedStatuses.includes(appRecord.status)) {
+      return res.status(400).json({ error: 'This application can no longer be edited' });
+    }
+
+    const fields = ['name', 'phone', 'company', 'service', 'budget', 'timeline', 'details'];
+    const updates = {};
+    for (const field of fields) {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
+
+    const required = ['name', 'phone', 'service', 'details'];
+    for (const key of required) {
+      const value = updates[key] !== undefined ? updates[key] : appRecord[key];
+      if (!value) return res.status(400).json({ error: 'Name, phone, service, and details are required' });
+    }
+
+    const updated = await Application.findByIdAndUpdate(req.params.id, updates, { new: true });
+    res.json(updated);
+  } catch (e) { res.status(500).json({ error: 'Failed to update application' }); }
+});
+
 // ===== Contact =====
 app.post('/api/contact', async (req, res) => {
   try {
@@ -241,6 +293,20 @@ app.patch('/api/admin/applications/:id', authenticateToken, requireAdmin, async 
 app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
   try { const users = await User.find().select('-password').sort({ createdAt: -1 }).limit(100); res.json(users); }
   catch (e) { res.status(500).json({ error: 'Failed to get users' }); }
+});
+
+app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ error: 'You cannot delete your own admin account' });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.role === 'admin') return res.status(400).json({ error: 'Admin users cannot be deleted from here' });
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (e) { res.status(500).json({ error: 'Failed to delete user' }); }
 });
 
 app.get('/api/admin/stats', authenticateToken, requireAdmin, async (req, res) => {

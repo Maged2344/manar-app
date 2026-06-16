@@ -598,7 +598,19 @@
     function renderUsers(users){
         const c=document.getElementById('usersTable');
         if(!users.length){c.innerHTML='<p class="empty-state">No users yet</p>';return;}
-        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Registered</th></tr></thead><tbody>${users.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td><span class="badge badge-${u.role==='admin'?'admin':'user'}">${u.role}</span></td><td>${new Date(u.createdAt).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`;
+        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Registered</th><th>Action</th></tr></thead><tbody>${users.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td><span class="badge badge-${u.role==='admin'?'admin':'user'}">${u.role}</span></td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>${u.role==='admin'?'':`<button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;" onclick="deleteUser('${u._id}','${esc(u.name)}')"><i class="fas fa-trash"></i> Delete</button>`}</td></tr>`).join('')}</tbody></table>`;
+    }
+
+    async function deleteUser(userId,userName){
+        if(!confirm(`Delete user ${userName}? This action cannot be undone.`))return;
+        try{
+            const r=await fetch(API+'/admin/users/'+userId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+            const d=await r.json();
+            if(!r.ok){alert(d.error||'Failed to delete user');return;}
+            await loadDashboard();
+        }catch(e){
+            alert('Connection error while deleting user');
+        }
     }
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}

@@ -2,19 +2,19 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Navigation Buttons & Links @buttons @smoke', () => {
   test('Hero "Explore Services" button navigates to services', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.click('a:has-text("Explore Services")');
     await expect(page).toHaveURL(/services\.html/);
   });
 
   test('Hero "Request a Service" button navigates to apply', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.click('a:has-text("Request a Service")');
     await expect(page).toHaveURL(/apply\.html/);
   });
 
   test('Logo click navigates to homepage', async ({ page }) => {
-    await page.goto('/services.html');
+    await page.goto('/services.html', { waitUntil: 'domcontentloaded' });
     await page.click('.logo');
     await expect(page).toHaveURL('/');
   });

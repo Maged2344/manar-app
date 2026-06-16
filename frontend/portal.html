@@ -91,6 +91,25 @@
         .empty-state h3{font-size:1.1rem;font-weight:600;color:var(--gray-500);margin-bottom:0.5rem;}
         .empty-state p{font-size:0.88rem;}
 
+        .app-card-actions{display:flex;justify-content:flex-end;margin-top:0.8rem;}
+        .avatar-upload-note{font-size:0.76rem;color:var(--gray-500);margin-top:0.4rem;}
+
+        .edit-app-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3200;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow:auto;}
+        .edit-app-overlay.active{display:flex;}
+        .edit-app-card{background:var(--white);width:100%;max-width:700px;border-radius:var(--radius);border:1px solid var(--gray-200);box-shadow:var(--shadow-lg);padding:1.6rem;}
+        .edit-app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+        .edit-app-header h3{font-size:1.2rem;font-weight:700;color:var(--dark);}
+        .edit-app-close{border:none;background:transparent;font-size:1.5rem;color:var(--gray-500);cursor:pointer;line-height:1;}
+        .edit-app-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+        .edit-app-form .form-group{margin-bottom:1rem;}
+        .edit-app-form label{display:block;font-size:0.82rem;font-weight:600;color:var(--gray-700);margin-bottom:0.4rem;}
+        .edit-app-form input,.edit-app-form textarea,.edit-app-form select{width:100%;padding:0.72rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:0.9rem;font-family:inherit;}
+        .edit-app-form textarea{resize:vertical;min-height:110px;}
+        .edit-app-form input:focus,.edit-app-form textarea:focus,.edit-app-form select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.08);}
+        .edit-app-status{margin-top:0.8rem;padding:0.6rem 0.85rem;border-radius:var(--radius-sm);font-size:0.84rem;display:none;}
+        .edit-app-status.success{display:block;background:#d1fae5;color:#065f46;}
+        .edit-app-status.error{display:block;background:#fee2e2;color:#991b1b;}
+
         @media(max-width:900px){.portal-container{grid-template-columns:1fr;}.portal-sidebar{position:static;}}
         @media(max-width:480px){.profile-form .form-row{grid-template-columns:1fr;}}
     </style>
@@ -178,7 +197,11 @@
                                 <div class="form-group"><label>Website</label><input type="url" id="profWebsite" placeholder="https://yoursite.com"></div>
                             </div>
                             <div class="form-group"><label>Bio</label><textarea id="profBio" placeholder="Tell us about yourself and what you do..." rows="4"></textarea></div>
-                            <div class="form-group"><label>Avatar URL</label><input type="url" id="profAvatar" placeholder="https://example.com/your-photo.jpg"></div>
+                            <div class="form-group">
+                                <label for="profAvatarFile">Profile Photo</label>
+                                <input type="file" id="profAvatarFile" accept="image/*">
+                                <div class="avatar-upload-note">Upload a JPG, PNG, or WEBP image.</div>
+                            </div>
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>&nbsp; Save Changes</button>
                                 <button type="button" class="btn btn-secondary" onclick="loadProfile()">Cancel</button>
@@ -228,10 +251,71 @@
         </div>
     </div>
 
+    <div class="edit-app-overlay" id="editAppOverlay">
+        <div class="edit-app-card">
+            <div class="edit-app-header">
+                <h3>Edit Application</h3>
+                <button class="edit-app-close" id="closeEditApp" aria-label="Close">&times;</button>
+            </div>
+            <form class="edit-app-form" id="editAppForm">
+                <div class="form-row">
+                    <div class="form-group"><label for="editAppName">Full Name *</label><input type="text" id="editAppName" required></div>
+                    <div class="form-group"><label for="editAppPhone">Phone *</label><input type="tel" id="editAppPhone" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="editAppCompany">Company / Brand</label><input type="text" id="editAppCompany"></div>
+                    <div class="form-group"><label for="editAppService">Service *</label>
+                        <select id="editAppService" required>
+                            <option value="">Select a service</option>
+                            <option value="Video Production">Video Production</option>
+                            <option value="Branding & Design">Branding & Design</option>
+                            <option value="Photography">Photography</option>
+                            <option value="Digital Marketing">Digital Marketing</option>
+                            <option value="Web Development">Web Development</option>
+                            <option value="Content Strategy">Content Strategy</option>
+                            <option value="Full Package">Full Package (Multiple Services)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="editAppBudget">Budget</label>
+                        <select id="editAppBudget">
+                            <option value="">Select budget range</option>
+                            <option value="Under $1,000">Under $1,000</option>
+                            <option value="$1,000 - $5,000">$1,000 - $5,000</option>
+                            <option value="$5,000 - $15,000">$5,000 - $15,000</option>
+                            <option value="$15,000 - $50,000">$15,000 - $50,000</option>
+                            <option value="$50,000+">$50,000+</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label for="editAppTimeline">Timeline</label>
+                        <select id="editAppTimeline">
+                            <option value="">Select timeline</option>
+                            <option value="ASAP">ASAP (Rush)</option>
+                            <option value="1-2 weeks">1-2 weeks</option>
+                            <option value="2-4 weeks">2-4 weeks</option>
+                            <option value="1-2 months">1-2 months</option>
+                            <option value="3+ months">3+ months</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label for="editAppDetails">Project Details *</label><textarea id="editAppDetails" required></textarea></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>&nbsp; Save Application</button>
+                    <button type="button" class="btn btn-secondary" id="cancelEditApp">Cancel</button>
+                </div>
+                <div class="edit-app-status" id="editAppStatus"></div>
+            </form>
+        </div>
+    </div>
+
     <script>
     const API = '/api';
     let token = localStorage.getItem('token');
     let currentUser = null;
+    let pendingAvatarData = '';
+    let editingApplicationId = null;
 
     // Check auth
     if (!token) { window.location.href = '/?login=1'; }
@@ -287,7 +371,9 @@
             document.getElementById('profLocation').value = currentUser.location || '';
             document.getElementById('profWebsite').value = currentUser.website || '';
             document.getElementById('profBio').value = currentUser.bio || '';
-            document.getElementById('profAvatar').value = currentUser.avatar || '';
+            pendingAvatarData = currentUser.avatar || '';
+            const avatarInput = document.getElementById('profAvatarFile');
+            if (avatarInput) avatarInput.value = '';
 
             // Load applications
             loadMyApplications();
@@ -321,6 +407,8 @@
 
     function renderAppCard(a) {
         const statusClass = 'status-' + (a.status || 'new').replace(' ', '-');
+        const editableStatuses = ['new', 'reviewed'];
+        const canEdit = editableStatuses.includes(a.status || 'new');
         return `<div class="my-app-card ${statusClass}">
             <div class="my-app-header">
                 <h4>${esc(a.service)}</h4>
@@ -332,6 +420,7 @@
                 ${a.timeline ? `<span><i class="fas fa-clock"></i> ${esc(a.timeline)}</span>` : ''}
             </div>
             <div class="my-app-details">${esc(a.details || '')}</div>
+            ${canEdit ? `<div class="app-card-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="openEditApplication('${esc(a._id)}')"><i class="fas fa-pen"></i>&nbsp; Edit</button></div>` : ''}
         </div>`;
     }
 
@@ -346,7 +435,7 @@
             location: document.getElementById('profLocation').value,
             website: document.getElementById('profWebsite').value,
             bio: document.getElementById('profBio').value,
-            avatar: document.getElementById('profAvatar').value
+            avatar: pendingAvatarData
         };
         try {
             const r = await fetch(API + '/auth/profile', {
@@ -420,6 +509,97 @@
         bar.style.width = pct + '%';
         bar.style.background = colors[strength - 1] || '#ef4444';
     }
+
+    document.getElementById('profAvatarFile').addEventListener('change', e => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            const status = document.getElementById('profileStatus');
+            status.className = 'profile-status error';
+            status.textContent = 'Please upload a valid image file.';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            pendingAvatarData = typeof reader.result === 'string' ? reader.result : '';
+            const status = document.getElementById('profileStatus');
+            status.className = 'profile-status success';
+            status.textContent = 'Photo selected. Click Save Changes to upload.';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    function closeEditApplication() {
+        editingApplicationId = null;
+        document.getElementById('editAppOverlay').classList.remove('active');
+        const status = document.getElementById('editAppStatus');
+        status.className = 'edit-app-status';
+        status.textContent = '';
+    }
+
+    async function openEditApplication(appId) {
+        try {
+            const r = await fetch(API + '/auth/applications', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!r.ok) return;
+            const apps = await r.json();
+            const app = apps.find(x => x._id === appId);
+            if (!app) return;
+
+            editingApplicationId = app._id;
+            document.getElementById('editAppName').value = app.name || '';
+            document.getElementById('editAppPhone').value = app.phone || '';
+            document.getElementById('editAppCompany').value = app.company || '';
+            document.getElementById('editAppService').value = app.service || '';
+            document.getElementById('editAppBudget').value = app.budget || '';
+            document.getElementById('editAppTimeline').value = app.timeline || '';
+            document.getElementById('editAppDetails').value = app.details || '';
+            document.getElementById('editAppOverlay').classList.add('active');
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    document.getElementById('editAppForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!editingApplicationId) return;
+        const status = document.getElementById('editAppStatus');
+        const payload = {
+            name: document.getElementById('editAppName').value,
+            phone: document.getElementById('editAppPhone').value,
+            company: document.getElementById('editAppCompany').value,
+            service: document.getElementById('editAppService').value,
+            budget: document.getElementById('editAppBudget').value,
+            timeline: document.getElementById('editAppTimeline').value,
+            details: document.getElementById('editAppDetails').value
+        };
+        try {
+            const r = await fetch(API + '/auth/applications/' + editingApplicationId, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
+            });
+            const d = await r.json();
+            if (r.ok) {
+                status.className = 'edit-app-status success';
+                status.textContent = 'Application updated successfully!';
+                await loadMyApplications();
+                setTimeout(closeEditApplication, 900);
+            } else {
+                status.className = 'edit-app-status error';
+                status.textContent = d.error || 'Failed to update application';
+            }
+        } catch (err) {
+            status.className = 'edit-app-status error';
+            status.textContent = 'Connection error. Please try again.';
+        }
+    });
+
+    document.getElementById('closeEditApp').addEventListener('click', closeEditApplication);
+    document.getElementById('cancelEditApp').addEventListener('click', closeEditApplication);
+    document.getElementById('editAppOverlay').addEventListener('click', e => {
+        if (e.target === document.getElementById('editAppOverlay')) closeEditApplication();
+    });
+    window.openEditApplication = openEditApplication;
 
     function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
