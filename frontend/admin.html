@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         .admin-layout{padding-top:80px;min-height:100vh;background:var(--gray-50);}
         .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
@@ -15,9 +16,11 @@
         .admin-actions{display:flex;gap:0.5rem;}
         .admin-actions .btn{font-size:0.82rem;padding:0.5rem 1rem;}
         .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
-        .stat-card{background:var(--white);padding:1.5rem;border-radius:var(--radius-md);box-shadow:var(--shadow);text-align:center;border:1px solid var(--gray-200);}
+        .stat-card{background:var(--white);padding:1.5rem;border-radius:var(--radius-md);box-shadow:var(--shadow);text-align:center;border:1px solid var(--gray-200);position:relative;overflow:hidden;}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary);}
         .stat-card .stat-val{font-size:2rem;font-weight:800;color:var(--primary);}
         .stat-card .stat-lbl{font-size:0.8rem;color:var(--gray-500);margin-top:0.2rem;}
+        .stat-card .stat-icon{font-size:1.5rem;color:var(--gray-200);position:absolute;top:1rem;right:1rem;}
         .chart-section{background:var(--white);border-radius:var(--radius-md);padding:1.5rem;margin-bottom:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);}
         .chart-section h3{font-size:1rem;font-weight:700;margin-bottom:1rem;color:var(--dark);}
         .chart-row{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;}
@@ -56,28 +59,89 @@
         .reach-item .reach-lbl{font-size:0.75rem;color:var(--gray-500);}
         .app-row{cursor:pointer;transition:background 0.2s;}
         .app-row:hover td{background:var(--gray-100)!important;}
-        /* Detail Modal */
-        .detail-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:3000;justify-content:center;align-items:flex-start;padding:5rem 1rem 2rem;}
+
+        /* Applications Filter Bar */
+        .apps-toolbar{display:flex;gap:0.8rem;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap;}
+        .apps-search{flex:1;min-width:200px;padding:0.6rem 1rem 0.6rem 2.4rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:0.85rem;background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 0.7rem center;}
+        .apps-search:focus{outline:none;border-color:var(--primary);}
+        .apps-filter{padding:0.6rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:0.82rem;background:var(--white);cursor:pointer;font-weight:500;color:var(--gray-700);}
+        .apps-filter:focus{outline:none;border-color:var(--primary);}
+        .apps-count{font-size:0.8rem;color:var(--gray-500);font-weight:500;margin-left:auto;}
+
+        /* Action Required Indicator */
+        .action-indicator{display:inline-flex;align-items:center;gap:0.3rem;padding:0.15rem 0.5rem;border-radius:50px;font-size:0.7rem;font-weight:600;}
+        .action-required{background:#fef2f2;color:#dc2626;animation:pulse-action 2s infinite;}
+        .action-pending{background:#fffbeb;color:#d97706;}
+        .action-none{background:#f0fdf4;color:#16a34a;}
+        @keyframes pulse-action{0%,100%{opacity:1;}50%{opacity:0.6;}}
+
+        /* Enhanced Detail Modal */
+        .detail-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:3000;justify-content:center;align-items:flex-start;padding:3rem 1rem 2rem;}
         .detail-overlay.active{display:flex;}
-        .detail-card{background:#fff;border-radius:var(--radius);width:100%;max-width:650px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-xl);padding:2rem;}
-        .detail-card .detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;}
-        .detail-card .detail-header h2{font-size:1.3rem;font-weight:700;color:var(--dark);}
-        .detail-card .detail-close{font-size:1.5rem;cursor:pointer;color:var(--gray-400);background:none;border:none;padding:0.3rem;}
-        .detail-card .detail-close:hover{color:var(--dark);}
+        .detail-card{background:#fff;border-radius:16px;width:100%;max-width:750px;max-height:88vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);padding:0;}
+        .detail-card-header{background:linear-gradient(135deg,var(--primary),#6366f1);padding:1.8rem 2rem;color:#fff;border-radius:16px 16px 0 0;position:relative;}
+        .detail-card-header h2{font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:0.3rem;}
+        .detail-card-header .detail-subtitle{font-size:0.82rem;opacity:0.85;}
+        .detail-card-header .detail-close{position:absolute;top:1.2rem;right:1.5rem;font-size:1.5rem;cursor:pointer;color:rgba(255,255,255,0.8);background:none;border:none;padding:0.3rem;transition:color 0.2s;}
+        .detail-card-header .detail-close:hover{color:#fff;}
+        .detail-card-body{padding:2rem;}
+        .detail-status-bar{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);}
+        .detail-status-bar .current-status{font-size:0.82rem;font-weight:600;color:var(--gray-700);}
+        .detail-status-bar .status-date{font-size:0.75rem;color:var(--gray-500);margin-left:auto;}
         .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;}
-        .detail-field{padding:0.8rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);}
-        .detail-field label{display:block;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.3rem;}
+        .detail-field{padding:1rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);transition:border-color 0.2s;}
+        .detail-field:hover{border-color:var(--primary);}
+        .detail-field label{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.4rem;}
+        .detail-field label i{font-size:0.75rem;}
         .detail-field span{font-size:0.9rem;color:var(--dark);font-weight:500;word-break:break-word;}
         .detail-full{grid-column:1/-1;}
-        .detail-details{padding:1rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);margin-bottom:1.5rem;}
-        .detail-details label{display:block;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.5rem;}
+        .detail-details{padding:1.2rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);margin-bottom:1.5rem;}
+        .detail-details label{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.5rem;}
         .detail-details p{font-size:0.9rem;color:var(--dark);line-height:1.7;white-space:pre-wrap;}
-        .detail-actions{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;padding-top:1rem;border-top:1px solid var(--gray-200);}
+
+        /* Contact Actions */
+        .detail-contact-actions{display:flex;gap:0.6rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+        .contact-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.2rem;border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;text-decoration:none;}
+        .contact-btn i{font-size:0.9rem;}
+        .whatsapp-btn{background:#25d366;color:#fff;}
+        .whatsapp-btn:hover{background:#1da851;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,211,102,0.3);}
+        .email-btn{background:#4f46e5;color:#fff;}
+        .email-btn:hover{background:#4338ca;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,70,229,0.3);}
+        .phone-btn{background:#0ea5e9;color:#fff;}
+        .phone-btn:hover{background:#0284c7;transform:translateY(-1px);box-shadow:0 4px 12px rgba(14,165,233,0.3);}
+
+        /* Status Actions */
+        .detail-actions{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;padding-top:1.2rem;border-top:1px solid var(--gray-200);}
         .detail-actions label{font-size:0.8rem;font-weight:600;color:var(--gray-500);margin-right:0.5rem;}
-        .status-btn{padding:0.4rem 0.9rem;border:1.5px solid var(--gray-200);border-radius:50px;background:transparent;cursor:pointer;font-weight:600;font-size:0.78rem;transition:var(--transition);}
-        .status-btn:hover{border-color:var(--primary);color:var(--primary);}
+        .status-btn{padding:0.45rem 1rem;border:1.5px solid var(--gray-200);border-radius:50px;background:transparent;cursor:pointer;font-weight:600;font-size:0.78rem;transition:all 0.2s;}
+        .status-btn:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-1px);}
         .status-btn.active-status{background:var(--primary);color:#fff;border-color:var(--primary);}
-        @media(max-width:768px){.chart-row{grid-template-columns:1fr;}.stats-grid{grid-template-columns:1fr 1fr;}.reach-summary{grid-template-columns:1fr 1fr;}.detail-grid{grid-template-columns:1fr;}}
+
+        /* Action Required Section in Detail */
+        .action-required-section{background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius-sm);padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.8rem;}
+        .action-required-section.action-pending-section{background:#fffbeb;border-color:#fed7aa;}
+        .action-required-section.action-done-section{background:#f0fdf4;border-color:#bbf7d0;}
+        .action-required-section i{font-size:1.2rem;}
+        .action-required-section .action-text{font-size:0.85rem;font-weight:600;}
+        .action-required-section .action-desc{font-size:0.78rem;color:var(--gray-600);margin-top:0.2rem;}
+
+        /* Timeline in detail */
+        .detail-timeline{margin-bottom:1.5rem;}
+        .detail-timeline h4{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.8rem;}
+        .timeline-item{display:flex;align-items:flex-start;gap:0.8rem;padding:0.5rem 0;position:relative;}
+        .timeline-item::before{content:'';position:absolute;left:5px;top:1.5rem;bottom:-0.5rem;width:2px;background:var(--gray-200);}
+        .timeline-item:last-child::before{display:none;}
+        .timeline-dot{width:12px;height:12px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:3px;}
+        .timeline-content{flex:1;}
+        .timeline-content .tl-label{font-size:0.8rem;font-weight:600;color:var(--dark);}
+        .timeline-content .tl-date{font-size:0.72rem;color:var(--gray-500);}
+
+        /* Application Cards View */
+        .apps-view-toggle{display:flex;gap:0.3rem;background:var(--gray-100);border-radius:var(--radius-sm);padding:0.2rem;}
+        .apps-view-toggle button{padding:0.4rem 0.7rem;border:none;border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:0.8rem;color:var(--gray-500);}
+        .apps-view-toggle button.active{background:var(--white);color:var(--dark);box-shadow:var(--shadow);}
+
+        @media(max-width:768px){.chart-row{grid-template-columns:1fr;}.stats-grid{grid-template-columns:1fr 1fr;}.reach-summary{grid-template-columns:1fr 1fr;}.detail-grid{grid-template-columns:1fr;}.apps-toolbar{flex-direction:column;align-items:stretch;}.detail-contact-actions{flex-direction:column;}}
     </style>
 </head>
 <body>
@@ -140,7 +204,37 @@
 
             <!-- Applications Panel -->
             <div class="tab-panel" id="panel-applications">
-                <div class="table-card"><h3>Service Applications</h3><div id="applicationsTable"><p class="empty-state">Loading...</p></div></div>
+                <div class="table-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                        <h3 style="margin-bottom:0;">Service Applications</h3>
+                        <div class="apps-view-toggle">
+                            <button class="active" onclick="setAppsView('table')" id="viewTableBtn"><i class="fas fa-list"></i></button>
+                            <button onclick="setAppsView('cards')" id="viewCardsBtn"><i class="fas fa-th-large"></i></button>
+                        </div>
+                    </div>
+                    <div class="apps-toolbar">
+                        <input type="text" class="apps-search" placeholder="Search by name, email, service..." id="appsSearch" oninput="filterApplications()">
+                        <select class="apps-filter" id="appsStatusFilter" onchange="filterApplications()">
+                            <option value="">All Statuses</option>
+                            <option value="new">New</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="approved">Approved</option>
+                            <option value="completed">Completed</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                        <select class="apps-filter" id="appsServiceFilter" onchange="filterApplications()">
+                            <option value="">All Services</option>
+                        </select>
+                        <select class="apps-filter" id="appsSortFilter" onchange="filterApplications()">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="name">Name A-Z</option>
+                        </select>
+                        <span class="apps-count" id="appsCount"></span>
+                    </div>
+                    <div id="applicationsTable"><p class="empty-state">Loading...</p></div>
+                </div>
             </div>
 
             <!-- Messages Panel -->
@@ -170,20 +264,50 @@
     <!-- Application Detail Modal -->
     <div class="detail-overlay" id="appDetailOverlay">
         <div class="detail-card">
-            <div class="detail-header">
+            <div class="detail-card-header">
                 <h2 id="detailTitle">Application Details</h2>
+                <p class="detail-subtitle" id="detailSubtitle"></p>
                 <button class="detail-close" onclick="closeDetail()">&times;</button>
             </div>
-            <div class="detail-grid" id="detailGrid"></div>
-            <div class="detail-details" id="detailMessage"></div>
-            <div class="detail-actions">
-                <label>Update Status:</label>
-                <button class="status-btn" data-status="new" onclick="setStatus('new')">New</button>
-                <button class="status-btn" data-status="reviewed" onclick="setStatus('reviewed')">Reviewed</button>
-                <button class="status-btn" data-status="in-progress" onclick="setStatus('in-progress')">In Progress</button>
-                <button class="status-btn" data-status="approved" onclick="setStatus('approved')">Approved</button>
-                <button class="status-btn" data-status="completed" onclick="setStatus('completed')">Completed</button>
-                <button class="status-btn" data-status="rejected" onclick="setStatus('rejected')">Rejected</button>
+            <div class="detail-card-body">
+                <!-- Action Required Banner -->
+                <div class="action-required-section" id="detailActionSection">
+                    <i class="fas fa-exclamation-circle" id="actionIcon"></i>
+                    <div>
+                        <div class="action-text" id="actionText">Action Required</div>
+                        <div class="action-desc" id="actionDesc">This application needs your review</div>
+                    </div>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="detail-status-bar">
+                    <span class="badge" id="detailStatusBadge">new</span>
+                    <span class="current-status" id="detailStatusText">Current Status</span>
+                    <span class="status-date" id="detailDate"></span>
+                </div>
+
+                <!-- Contact Actions -->
+                <div class="detail-contact-actions" id="detailContactActions"></div>
+
+                <!-- Application Info Grid -->
+                <div class="detail-grid" id="detailGrid"></div>
+
+                <!-- Project Details -->
+                <div class="detail-details" id="detailMessage"></div>
+
+                <!-- Timeline -->
+                <div class="detail-timeline" id="detailTimeline"></div>
+
+                <!-- Status Update Actions -->
+                <div class="detail-actions">
+                    <label><i class="fas fa-edit"></i> Update Status:</label>
+                    <button class="status-btn" data-status="new" onclick="setStatus('new')">New</button>
+                    <button class="status-btn" data-status="reviewed" onclick="setStatus('reviewed')">Reviewed</button>
+                    <button class="status-btn" data-status="in-progress" onclick="setStatus('in-progress')">In Progress</button>
+                    <button class="status-btn" data-status="approved" onclick="setStatus('approved')">Approved</button>
+                    <button class="status-btn" data-status="completed" onclick="setStatus('completed')">Completed</button>
+                    <button class="status-btn" data-status="rejected" onclick="setStatus('rejected')">Rejected</button>
+                </div>
             </div>
         </div>
     </div>
@@ -193,6 +317,8 @@
     let token=localStorage.getItem('token');
     let user=JSON.parse(localStorage.getItem('user')||'null');
     let visitorsChart,servicesChart,reachChart;
+    let allApps=[];
+    let currentView='table';
 
     function init(){
         if(token&&user&&user.role==='admin'){showDashboard();}else{showLogin();}
@@ -229,13 +355,102 @@
             document.getElementById('statToday').textContent=stats.visitorsToday||0;
             document.getElementById('statTotal').textContent=stats.totalVisits||0;
             // Tables
-            renderApplications(apps);renderMessages(contacts);renderUsers(users);
+            allApps=apps;
+            populateServiceFilter(apps);
+            filterApplications();
+            renderMessages(contacts);renderUsers(users);
             // Reach
             renderReach(reach);
             // Charts
             renderVisitorsChart(reach.daily||[]);
             renderServicesChart(stats.serviceBreakdown||[]);
         }catch(e){console.error(e);}
+    }
+
+    function populateServiceFilter(apps){
+        const services=[...new Set(apps.map(a=>a.service).filter(Boolean))];
+        const sel=document.getElementById('appsServiceFilter');
+        sel.innerHTML='<option value="">All Services</option>'+services.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    }
+
+    function filterApplications(){
+        const search=(document.getElementById('appsSearch').value||'').toLowerCase();
+        const statusFilter=document.getElementById('appsStatusFilter').value;
+        const serviceFilter=document.getElementById('appsServiceFilter').value;
+        const sort=document.getElementById('appsSortFilter').value;
+
+        let filtered=allApps.filter(a=>{
+            const matchSearch=!search||a.name.toLowerCase().includes(search)||a.email.toLowerCase().includes(search)||(a.service||'').toLowerCase().includes(search)||(a.company||'').toLowerCase().includes(search)||(a.phone||'').includes(search);
+            const matchStatus=!statusFilter||(a.status||'new')===statusFilter;
+            const matchService=!serviceFilter||a.service===serviceFilter;
+            return matchSearch&&matchStatus&&matchService;
+        });
+
+        if(sort==='oldest') filtered.sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
+        else if(sort==='name') filtered.sort((a,b)=>a.name.localeCompare(b.name));
+        else filtered.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+        document.getElementById('appsCount').textContent=`${filtered.length} of ${allApps.length} applications`;
+        renderApplications(filtered);
+    }
+
+    function setAppsView(view){
+        currentView=view;
+        document.getElementById('viewTableBtn').classList.toggle('active',view==='table');
+        document.getElementById('viewCardsBtn').classList.toggle('active',view==='cards');
+        filterApplications();
+    }
+
+    function getActionInfo(status){
+        switch(status||'new'){
+            case 'new': return {cls:'action-required',icon:'fa-exclamation-circle',text:'Action Required',desc:'Review this application and respond to the client',color:'#dc2626'};
+            case 'reviewed': return {cls:'action-pending',icon:'fa-clock',text:'Pending Decision',desc:'Application reviewed — decide to approve or start work',color:'#d97706'};
+            case 'in-progress': return {cls:'action-pending',icon:'fa-spinner',text:'Work In Progress',desc:'Project is being worked on — update when completed',color:'#d97706'};
+            case 'approved': return {cls:'action-pending',icon:'fa-check-circle',text:'Approved - Awaiting Start',desc:'Contact client and begin the project',color:'#d97706'};
+            case 'completed': return {cls:'action-done',icon:'fa-check-double',text:'Completed',desc:'This application has been fulfilled',color:'#16a34a'};
+            case 'rejected': return {cls:'action-done',icon:'fa-times-circle',text:'Rejected',desc:'This application was declined',color:'#991b1b'};
+            default: return {cls:'action-required',icon:'fa-question-circle',text:'Unknown Status',desc:'Update the status',color:'#6b7280'};
+        }
+    }
+
+    function renderApplications(apps){
+        const c=document.getElementById('applicationsTable');
+        if(!apps.length){c.innerHTML='<p class="empty-state"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:0.5rem;"></i>No applications match your filters</p>';return;}
+        
+        if(currentView==='cards'){
+            c.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;">${apps.map((a,i)=>{
+                const action=getActionInfo(a.status);
+                const globalIdx=allApps.findIndex(x=>x._id===a._id);
+                return `<div class="app-card-item" onclick="openDetail(${globalIdx})" style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1.2rem;cursor:pointer;transition:all 0.2s;border-left:4px solid ${action.color};" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;">
+                        <div><strong style="font-size:0.95rem;color:var(--dark);">${esc(a.name)}</strong><div style="font-size:0.78rem;color:var(--gray-500);">${esc(a.email)}</div></div>
+                        <span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span>
+                    </div>
+                    <div style="display:flex;gap:1rem;font-size:0.8rem;color:var(--gray-600);margin-bottom:0.6rem;">
+                        <span><i class="fas fa-briefcase"></i> ${esc(a.service)}</span>
+                        <span><i class="fas fa-phone"></i> ${esc(a.phone||'-')}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span class="action-indicator ${action.cls}"><i class="fas ${action.icon}"></i> ${action.text}</span>
+                        <span style="font-size:0.72rem;color:var(--gray-400);">${new Date(a.createdAt).toLocaleDateString()}</span>
+                    </div>
+                </div>`;
+            }).join('')}</div>`;
+        } else {
+            c.innerHTML=`<table class="admin-table"><thead><tr><th>Applicant</th><th>Service</th><th>Budget</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>${apps.map((a,i)=>{
+                const action=getActionInfo(a.status);
+                const globalIdx=allApps.findIndex(x=>x._id===a._id);
+                return `<tr class="app-row" onclick="openDetail(${globalIdx})">
+                    <td><strong>${esc(a.name)}</strong><div style="font-size:0.75rem;color:var(--gray-500);">${esc(a.email)}</div></td>
+                    <td>${esc(a.service)}</td>
+                    <td>${esc(a.budget||'-')}</td>
+                    <td>${new Date(a.createdAt).toLocaleDateString()}</td>
+                    <td><span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span></td>
+                    <td><span class="action-indicator ${action.cls}"><i class="fas ${action.icon}"></i> ${action.text}</span></td>
+                </tr>`;
+            }).join('')}</tbody></table>`;
+        }
+        window._appsList=allApps;
     }
 
     function renderVisitorsChart(daily){
@@ -264,33 +479,85 @@
         reachChart=new Chart(ctx,{type:'bar',data:{labels:daily.map(d=>d.date),datasets:[{label:'Visitors',data:daily.map(d=>d.count),backgroundColor:'rgba(79,70,229,0.6)',borderRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
     }
 
-    function renderApplications(apps){
-        const c=document.getElementById('applicationsTable');
-        if(!apps.length){c.innerHTML='<p class="empty-state">No applications yet</p>';return;}
-        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Service</th><th>Company</th><th>Budget</th><th>Timeline</th><th>Date</th><th>Status</th></tr></thead><tbody>${apps.map((a,i)=>`<tr class="app-row" onclick="openDetail(${i})"><td><strong>${esc(a.name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.phone||'-')}</td><td>${esc(a.service)}</td><td>${esc(a.company||'-')}</td><td>${esc(a.budget||'-')}</td><td>${esc(a.timeline||'-')}</td><td>${new Date(a.createdAt).toLocaleDateString()}</td><td><span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span></td></tr>`).join('')}</tbody></table>`;
-        window._appsList=apps;
+    let currentAppId=null;
+    function formatWhatsAppNumber(phone){
+        if(!phone) return '';
+        let cleaned=phone.replace(/[\s\-\(\)]/g,'');
+        if(!cleaned.startsWith('+')&&!cleaned.startsWith('00')){
+            // Assume it might need country code - keep as is for WhatsApp
+            if(cleaned.startsWith('0')) cleaned=cleaned.substring(1);
+        }
+        cleaned=cleaned.replace(/[^0-9]/g,'');
+        return cleaned;
     }
 
-    let currentAppId=null;
     function openDetail(idx){
         const a=window._appsList[idx]; if(!a)return;
         currentAppId=a._id;
-        document.getElementById('detailTitle').textContent=`Application - ${a.name}`;
-        document.getElementById('detailGrid').innerHTML=`
-            <div class="detail-field"><label>Full Name</label><span>${esc(a.name)}</span></div>
-            <div class="detail-field"><label>Email</label><span>${esc(a.email)}</span></div>
-            <div class="detail-field"><label>Phone</label><span>${esc(a.phone||'-')}</span></div>
-            <div class="detail-field"><label>Company</label><span>${esc(a.company||'-')}</span></div>
-            <div class="detail-field"><label>Service Requested</label><span>${esc(a.service)}</span></div>
-            <div class="detail-field"><label>Budget</label><span>${esc(a.budget||'Not specified')}</span></div>
-            <div class="detail-field"><label>Timeline</label><span>${esc(a.timeline||'Not specified')}</span></div>
-            <div class="detail-field"><label>Submitted</label><span>${new Date(a.createdAt).toLocaleString()}</span></div>
+        
+        // Header
+        document.getElementById('detailTitle').textContent=a.name;
+        document.getElementById('detailSubtitle').textContent=`${a.service} • Submitted ${new Date(a.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`;
+        
+        // Action Required Section
+        const action=getActionInfo(a.status);
+        const actionSection=document.getElementById('detailActionSection');
+        actionSection.className=`action-required-section action-${action.cls.replace('action-','')}-section`;
+        document.getElementById('actionIcon').className=`fas ${action.icon}`;
+        document.getElementById('actionIcon').style.color=action.color;
+        document.getElementById('actionText').textContent=action.text;
+        document.getElementById('actionDesc').textContent=action.desc;
+
+        // Status Bar
+        const statusBadge=document.getElementById('detailStatusBadge');
+        statusBadge.className=`badge badge-${(a.status||'new').replace(' ','-')}`;
+        statusBadge.textContent=(a.status||'new').charAt(0).toUpperCase()+(a.status||'new').slice(1);
+        document.getElementById('detailStatusText').textContent=`Status: ${(a.status||'new').replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase())}`;
+        document.getElementById('detailDate').textContent=`Submitted: ${new Date(a.createdAt).toLocaleString()}`;
+
+        // Contact Actions (WhatsApp, Email, Phone)
+        const waNumber=formatWhatsAppNumber(a.phone);
+        const waMessage=encodeURIComponent(`Hello ${a.name}, regarding your ${a.service} application at Manar Media — `);
+        const contactHTML=`
+            ${waNumber?`<a href="https://wa.me/${waNumber}?text=${waMessage}" target="_blank" class="contact-btn whatsapp-btn"><i class="fab fa-whatsapp"></i> WhatsApp ${a.name}</a>`:''}
+            <a href="mailto:${esc(a.email)}?subject=${encodeURIComponent('Re: Your '+a.service+' Application - Manar Media')}" class="contact-btn email-btn"><i class="fas fa-envelope"></i> Send Email</a>
+            ${a.phone?`<a href="tel:${esc(a.phone)}" class="contact-btn phone-btn"><i class="fas fa-phone"></i> Call ${esc(a.phone)}</a>`:''}
         `;
-        document.getElementById('detailMessage').innerHTML=`<label>Project Details</label><p>${esc(a.details||'No details provided')}</p>`;
-        // Highlight current status
+        document.getElementById('detailContactActions').innerHTML=contactHTML;
+
+        // Detail Grid
+        document.getElementById('detailGrid').innerHTML=`
+            <div class="detail-field"><label><i class="fas fa-user"></i> Full Name</label><span>${esc(a.name)}</span></div>
+            <div class="detail-field"><label><i class="fas fa-envelope"></i> Email</label><span>${esc(a.email)}</span></div>
+            <div class="detail-field"><label><i class="fas fa-phone"></i> Phone</label><span>${esc(a.phone||'-')}</span></div>
+            <div class="detail-field"><label><i class="fas fa-building"></i> Company</label><span>${esc(a.company||'Individual / Not specified')}</span></div>
+            <div class="detail-field"><label><i class="fas fa-cogs"></i> Service Requested</label><span>${esc(a.service)}</span></div>
+            <div class="detail-field"><label><i class="fas fa-dollar-sign"></i> Budget</label><span>${esc(a.budget||'Not specified')}</span></div>
+            <div class="detail-field"><label><i class="fas fa-calendar-alt"></i> Timeline</label><span>${esc(a.timeline||'Not specified')}</span></div>
+            <div class="detail-field"><label><i class="fas fa-clock"></i> Submitted</label><span>${new Date(a.createdAt).toLocaleString('en-US',{weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+        `;
+
+        // Project Details
+        document.getElementById('detailMessage').innerHTML=`<label><i class="fas fa-file-alt"></i> Project Details & Requirements</label><p>${esc(a.details||'No details provided')}</p>`;
+
+        // Timeline
+        document.getElementById('detailTimeline').innerHTML=`
+            <h4><i class="fas fa-stream"></i> Application Timeline</h4>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="tl-label">Application Submitted</div>
+                    <div class="tl-date">${new Date(a.createdAt).toLocaleString()}</div>
+                </div>
+            </div>
+            ${a.status!=='new'?`<div class="timeline-item"><div class="timeline-dot" style="background:#f59e0b;"></div><div class="timeline-content"><div class="tl-label">Status Updated to: ${(a.status||'').replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase())}</div><div class="tl-date">Current</div></div></div>`:''}
+        `;
+
+        // Highlight current status button
         document.querySelectorAll('.status-btn').forEach(b=>{b.classList.toggle('active-status',b.dataset.status===(a.status||'new'));});
         document.getElementById('appDetailOverlay').classList.add('active');
     }
+
     function closeDetail(){document.getElementById('appDetailOverlay').classList.remove('active');currentAppId=null;}
     document.getElementById('appDetailOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('appDetailOverlay'))closeDetail();});
 
@@ -300,9 +567,24 @@
             const r=await fetch(API+'/admin/applications/'+currentAppId,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({status})});
             if(r.ok){
                 document.querySelectorAll('.status-btn').forEach(b=>{b.classList.toggle('active-status',b.dataset.status===status);});
-                // Refresh table
+                // Refresh applications
                 const apps=await fetch(API+'/admin/applications',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
-                renderApplications(apps);
+                allApps=apps;
+                populateServiceFilter(apps);
+                filterApplications();
+                // Update detail modal action section
+                const action=getActionInfo(status);
+                const actionSection=document.getElementById('detailActionSection');
+                actionSection.className=`action-required-section action-${action.cls.replace('action-','')}-section`;
+                document.getElementById('actionIcon').className=`fas ${action.icon}`;
+                document.getElementById('actionIcon').style.color=action.color;
+                document.getElementById('actionText').textContent=action.text;
+                document.getElementById('actionDesc').textContent=action.desc;
+                // Update status bar
+                const statusBadge=document.getElementById('detailStatusBadge');
+                statusBadge.className=`badge badge-${status.replace(' ','-')}`;
+                statusBadge.textContent=status.charAt(0).toUpperCase()+status.slice(1);
+                document.getElementById('detailStatusText').textContent=`Status: ${status.replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase())}`;
             }
         }catch(e){console.error(e);}
     }
@@ -330,6 +612,9 @@
             document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
         });
     });
+
+    // Keyboard shortcut - ESC to close modal
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail();});
 
     init();
     </script>
