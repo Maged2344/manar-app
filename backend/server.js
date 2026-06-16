@@ -329,6 +329,21 @@ app.get('/api/admin/stats', authenticateToken, requireAdmin, async (req, res) =>
   } catch (e) { res.status(500).json({ error: 'Failed to get stats' }); }
 });
 
+app.delete('/api/admin/visits', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    await Visit.deleteMany({});
+    res.json({ message: 'All visitor data reset successfully' });
+  } catch (e) { res.status(500).json({ error: 'Failed to reset visitors' }); }
+});
+
+app.delete('/api/admin/applications/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const app = await Application.findByIdAndDelete(req.params.id);
+    if (!app) return res.status(404).json({ error: 'Application not found' });
+    res.json({ message: 'Application deleted successfully' });
+  } catch (e) { res.status(500).json({ error: 'Failed to delete application' }); }
+});
+
 app.get('/api/admin/reach', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const now = new Date();

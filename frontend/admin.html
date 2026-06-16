@@ -249,6 +249,10 @@
 
             <!-- Reach Panel -->
             <div class="tab-panel" id="panel-reach">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <span style="font-size:0.85rem;color:var(--gray-500);">Unique visitors per device/IP per day</span>
+                    <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;" onclick="resetVisitors()"><i class="fas fa-trash"></i>&nbsp; Reset All Visitors</button>
+                </div>
                 <div class="reach-summary">
                     <div class="reach-item"><div class="reach-val" id="reachToday">-</div><div class="reach-lbl">Today</div></div>
                     <div class="reach-item"><div class="reach-val" id="reachYesterday">-</div><div class="reach-lbl">Yesterday</div></div>
@@ -421,18 +425,18 @@
             c.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;">${apps.map((a,i)=>{
                 const action=getActionInfo(a.status);
                 const globalIdx=allApps.findIndex(x=>x._id===a._id);
-                return `<div class="app-card-item" onclick="openDetail(${globalIdx})" style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1.2rem;cursor:pointer;transition:all 0.2s;border-left:4px solid ${action.color};" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;">
+                return `<div class="app-card-item" style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:1.2rem;transition:all 0.2s;border-left:4px solid ${action.color};" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;cursor:pointer;" onclick="openDetail(${globalIdx})">
                         <div><strong style="font-size:0.95rem;color:var(--dark);">${esc(a.name)}</strong><div style="font-size:0.78rem;color:var(--gray-500);">${esc(a.email)}</div></div>
                         <span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span>
                     </div>
-                    <div style="display:flex;gap:1rem;font-size:0.8rem;color:var(--gray-600);margin-bottom:0.6rem;">
+                    <div style="display:flex;gap:1rem;font-size:0.8rem;color:var(--gray-600);margin-bottom:0.6rem;cursor:pointer;" onclick="openDetail(${globalIdx})">
                         <span><i class="fas fa-briefcase"></i> ${esc(a.service)}</span>
                         <span><i class="fas fa-phone"></i> ${esc(a.phone||'-')}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span class="action-indicator ${action.cls}"><i class="fas ${action.icon}"></i> ${action.text}</span>
-                        <span style="font-size:0.72rem;color:var(--gray-400);">${new Date(a.createdAt).toLocaleDateString()}</span>
+                        <span class="action-indicator ${action.cls}" style="cursor:pointer;" onclick="openDetail(${globalIdx})"><i class="fas ${action.icon}"></i> ${action.text}</span>
+                        <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;padding:0.3rem 0.6rem;font-size:0.72rem;" onclick="deleteApplication('${a._id}','${esc(a.name)}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`;
             }).join('')}</div>`;
@@ -440,13 +444,16 @@
             c.innerHTML=`<table class="admin-table"><thead><tr><th>Applicant</th><th>Service</th><th>Budget</th><th>Date</th><th>Status</th><th>Action</th></tr></thead><tbody>${apps.map((a,i)=>{
                 const action=getActionInfo(a.status);
                 const globalIdx=allApps.findIndex(x=>x._id===a._id);
-                return `<tr class="app-row" onclick="openDetail(${globalIdx})">
-                    <td><strong>${esc(a.name)}</strong><div style="font-size:0.75rem;color:var(--gray-500);">${esc(a.email)}</div></td>
-                    <td>${esc(a.service)}</td>
-                    <td>${esc(a.budget||'-')}</td>
-                    <td>${new Date(a.createdAt).toLocaleDateString()}</td>
-                    <td><span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span></td>
-                    <td><span class="action-indicator ${action.cls}"><i class="fas ${action.icon}"></i> ${action.text}</span></td>
+                return `<tr>
+                    <td style="cursor:pointer;" onclick="openDetail(${globalIdx})"><strong>${esc(a.name)}</strong><div style="font-size:0.75rem;color:var(--gray-500);">${esc(a.email)}</div></td>
+                    <td style="cursor:pointer;" onclick="openDetail(${globalIdx})">${esc(a.service)}</td>
+                    <td style="cursor:pointer;" onclick="openDetail(${globalIdx})">${esc(a.budget||'-')}</td>
+                    <td style="cursor:pointer;" onclick="openDetail(${globalIdx})">${new Date(a.createdAt).toLocaleDateString()}</td>
+                    <td style="cursor:pointer;" onclick="openDetail(${globalIdx})"><span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span></td>
+                    <td style="display:flex;gap:0.4rem;align-items:center;">
+                        <span class="action-indicator ${action.cls}" style="cursor:pointer;" onclick="openDetail(${globalIdx})"><i class="fas ${action.icon}"></i> ${action.text}</span>
+                        <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;padding:0.3rem 0.6rem;font-size:0.72rem;" onclick="deleteApplication('${a._id}','${esc(a.name)}')" title="Delete Application"><i class="fas fa-trash"></i></button>
+                    </td>
                 </tr>`;
             }).join('')}</tbody></table>`;
         }
@@ -610,6 +617,33 @@
             await loadDashboard();
         }catch(e){
             alert('Connection error while deleting user');
+        }
+    }
+
+    async function deleteApplication(appId,appName){
+        if(!confirm(`Delete application from "${appName}"? This cannot be undone.`))return;
+        try{
+            const r=await fetch(API+'/admin/applications/'+appId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+            const d=await r.json();
+            if(!r.ok){alert(d.error||'Failed to delete application');return;}
+            const apps=await fetch(API+'/admin/applications',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
+            allApps=apps;
+            populateServiceFilter(apps);
+            filterApplications();
+        }catch(e){
+            alert('Connection error while deleting application');
+        }
+    }
+
+    async function resetVisitors(){
+        if(!confirm('Reset all visitor data? This will permanently clear all visit records and cannot be undone.'))return;
+        try{
+            const r=await fetch(API+'/admin/visits',{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+            const d=await r.json();
+            if(!r.ok){alert(d.error||'Failed to reset visitors');return;}
+            await loadDashboard();
+        }catch(e){
+            alert('Connection error while resetting visitors');
         }
     }
 
