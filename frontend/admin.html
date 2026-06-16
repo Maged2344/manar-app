@@ -436,7 +436,7 @@
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                         <span class="action-indicator ${action.cls}" style="cursor:pointer;" onclick="openDetail(${globalIdx})"><i class="fas ${action.icon}"></i> ${action.text}</span>
-                        <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;padding:0.3rem 0.6rem;font-size:0.72rem;" onclick="deleteApplication('${a._id}','${esc(a.name)}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-secondary btn-sm del-app-btn" data-id="${a._id}" data-name="${esc(a.name)}" style="color:var(--error);border-color:#fecaca;padding:0.3rem 0.6rem;font-size:0.72rem;"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>`;
             }).join('')}</div>`;
@@ -452,7 +452,7 @@
                     <td style="cursor:pointer;" onclick="openDetail(${globalIdx})"><span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span></td>
                     <td style="display:flex;gap:0.4rem;align-items:center;">
                         <span class="action-indicator ${action.cls}" style="cursor:pointer;" onclick="openDetail(${globalIdx})"><i class="fas ${action.icon}"></i> ${action.text}</span>
-                        <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;padding:0.3rem 0.6rem;font-size:0.72rem;" onclick="deleteApplication('${a._id}','${esc(a.name)}')" title="Delete Application"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-secondary btn-sm del-app-btn" data-id="${a._id}" data-name="${esc(a.name)}" style="color:var(--error);border-color:#fecaca;padding:0.3rem 0.6rem;font-size:0.72rem;" title="Delete Application"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             }).join('')}</tbody></table>`;
@@ -622,7 +622,7 @@
                     <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
                         ${waNum?`<a href="https://wa.me/${waNum}?text=${waText}" target="_blank" class="contact-btn whatsapp-btn" style="padding:0.35rem 0.7rem;font-size:0.75rem;" title="Reply on WhatsApp"><i class="fab fa-whatsapp"></i> WA</a>`:''}
                         <a href="mailto:${esc(m.email)}?subject=${emailSubject}&body=${emailBody}" class="contact-btn email-btn" style="padding:0.35rem 0.7rem;font-size:0.75rem;" title="Reply by Email"><i class="fas fa-envelope"></i> Email</a>
-                        <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;padding:0.35rem 0.6rem;font-size:0.72rem;" onclick="deleteMessage('${m._id}','${esc(m.name)}')" title="Delete Message"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-secondary btn-sm del-msg-btn" data-id="${m._id}" data-name="${esc(m.name)}" style="color:var(--error);border-color:#fecaca;padding:0.35rem 0.6rem;font-size:0.72rem;" title="Delete Message"><i class="fas fa-trash"></i></button>
                     </div>
                 </td>
             </tr>`;
@@ -657,8 +657,19 @@
     function renderUsers(users){
         const c=document.getElementById('usersTable');
         if(!users.length){c.innerHTML='<p class="empty-state">No users yet</p>';return;}
-        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Registered</th><th>Action</th></tr></thead><tbody>${users.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td><span class="badge badge-${u.role==='admin'?'admin':'user'}">${u.role}</span></td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>${u.role==='admin'?'':`<button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;" onclick="deleteUser('${u._id}','${esc(u.name)}')"><i class="fas fa-trash"></i> Delete</button>`}</td></tr>`).join('')}</tbody></table>`;
+        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Registered</th><th>Action</th></tr></thead><tbody>${users.map(u=>`<tr><td><strong>${esc(u.name)}</strong></td><td>${esc(u.email)}</td><td><span class="badge badge-${u.role==='admin'?'admin':'user'}">${u.role}</span></td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>${u.role==='admin'?'':`<button class="btn btn-secondary btn-sm del-user-btn" data-id="${u._id}" data-name="${esc(u.name)}" style="color:var(--error);border-color:#fecaca;"><i class="fas fa-trash"></i> Delete</button>`}</td></tr>`).join('')}</tbody></table>`;
     }
+
+    // Delegated event listeners — reads id/name from data attributes so
+    // any character in the name (tags, quotes, etc.) is safe.
+    document.getElementById('adminDashboard').addEventListener('click', e => {
+        const msgBtn = e.target.closest('.del-msg-btn');
+        if (msgBtn) { deleteMessage(msgBtn.dataset.id, msgBtn.dataset.name); return; }
+        const appBtn = e.target.closest('.del-app-btn');
+        if (appBtn) { deleteApplication(appBtn.dataset.id, appBtn.dataset.name); return; }
+        const userBtn = e.target.closest('.del-user-btn');
+        if (userBtn) { deleteUser(userBtn.dataset.id, userBtn.dataset.name); return; }
+    });
 
     async function deleteUser(userId,userName){
         if(!confirm(`Delete user ${userName}? This action cannot be undone.`))return;
