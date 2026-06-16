@@ -382,11 +382,17 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <span class="close" id="closeModal">&times;</span>
-            <h2 id="modalTitle">Sign In</h2>
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <div style="width:50px;height:50px;background:var(--gradient);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;"><i class="fas fa-user" style="color:#fff;font-size:1.2rem;"></i></div>
+                <h2 id="modalTitle" style="margin-bottom:0.3rem;">Sign In</h2>
+                <p style="font-size:0.85rem;color:var(--gray-500);">Access your account and manage your projects</p>
+            </div>
             <form id="authForm">
-                <div class="form-group" id="nameGroup" style="display:none;"><label for="name">Full Name</label><input type="text" id="name" placeholder="Your name"></div>
+                <div class="form-group" id="nameGroup" style="display:none;"><label for="name">Full Name</label><input type="text" id="name" placeholder="Your full name"></div>
                 <div class="form-group"><label for="email">Email</label><input type="email" id="email" placeholder="your@email.com" required></div>
-                <div class="form-group"><label for="password">Password</label><input type="password" id="password" placeholder="Password" required></div>
+                <div class="form-group"><label for="password">Password</label><input type="password" id="password" placeholder="Password (min 6 characters)" required></div>
+                <div class="form-group" id="regPhoneGroup" style="display:none;"><label for="regPhone">Phone (Optional)</label><input type="tel" id="regPhone" placeholder="+20 xxx xxx xxxx"></div>
+                <div class="form-group" id="regCompanyGroup" style="display:none;"><label for="regCompany">Company (Optional)</label><input type="text" id="regCompany" placeholder="Your company name"></div>
                 <button type="submit" class="btn btn-primary btn-full" id="authSubmitBtn">Sign In</button>
                 <p class="toggle-auth">Don't have an account? <a href="#" id="toggleAuth">Register</a></p>
             </form>

@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, default: 'user' },
+  phone: { type: String, default: '' },
+  company: { type: String, default: '' },
+  bio: { type: String, default: '' },
+  avatar: { type: String, default: '' },
+  location: { type: String, default: '' },
+  website: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -144,6 +150,50 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try { const user = await User.findById(req.user.id).select('-password'); if (!user) return res.status(404).json({ error: 'User not found' }); res.json(user); }
   catch (e) { res.status(500).json({ error: 'Failed to get user' }); }
+});
+
+// Update Profile
+app.patch('/api/auth/profile', authenticateToken, async (req, res) => {
+  try {
+    const { name, phone, company, bio, avatar, location, website } = req.body;
+    const updates = {};
+    if (name) updates.name = name;
+    if (phone !== undefined) updates.phone = phone;
+    if (company !== undefined) updates.company = company;
+    if (bio !== undefined) updates.bio = bio;
+    if (avatar !== undefined) updates.avatar = avatar;
+    if (location !== undefined) updates.location = location;
+    if (website !== undefined) updates.website = website;
+    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true }).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (e) { res.status(500).json({ error: 'Failed to update profile' }); }
+});
+
+// Change Password
+app.patch('/api/auth/password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ message: 'Password updated successfully' });
+  } catch (e) { res.status(500).json({ error: 'Failed to change password' }); }
+});
+
+// Get user's own applications
+app.get('/api/auth/applications', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const apps = await Application.find({ email: user.email }).sort({ createdAt: -1 });
+    res.json(apps);
+  } catch (e) { res.status(500).json({ error: 'Failed to get applications' }); }
 });
 
 // ===== Contact =====

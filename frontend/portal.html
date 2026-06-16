@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Manar Media</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .portal-layout{padding-top:80px;min-height:100vh;background:var(--gray-50);}
+        .portal-container{display:grid;grid-template-columns:280px 1fr;gap:2rem;padding:2rem 0;min-height:calc(100vh - 80px);}
+        
+        /* Sidebar */
+        .portal-sidebar{background:var(--white);border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);height:fit-content;position:sticky;top:100px;}
+        .profile-card{text-align:center;padding-bottom:1.5rem;border-bottom:1px solid var(--gray-200);margin-bottom:1.5rem;}
+        .profile-avatar{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2.2rem;font-weight:800;color:#fff;background:var(--gradient);position:relative;cursor:pointer;transition:var(--transition);}
+        .profile-avatar:hover{transform:scale(1.05);}
+        .profile-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+        .profile-avatar .avatar-edit{position:absolute;bottom:0;right:0;width:28px;height:28px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.7rem;border:2px solid var(--white);}
+        .profile-card h3{font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:0.2rem;}
+        .profile-card .profile-email{font-size:0.82rem;color:var(--gray-500);}
+        .profile-card .profile-role{display:inline-block;margin-top:0.5rem;padding:0.15rem 0.7rem;border-radius:50px;font-size:0.72rem;font-weight:600;background:#dbeafe;color:#1e40af;}
+        
+        .portal-nav{display:flex;flex-direction:column;gap:0.3rem;}
+        .portal-nav button{display:flex;align-items:center;gap:0.8rem;width:100%;padding:0.7rem 1rem;border:none;border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:0.88rem;font-weight:500;color:var(--gray-500);transition:var(--transition);text-align:left;}
+        .portal-nav button:hover{background:var(--gray-50);color:var(--dark);}
+        .portal-nav button.active{background:rgba(79,70,229,0.06);color:var(--primary);font-weight:600;}
+        .portal-nav button i{width:20px;text-align:center;font-size:0.9rem;}
+        .portal-nav .nav-divider{height:1px;background:var(--gray-200);margin:0.5rem 0;}
+        .portal-nav .logout-btn{color:var(--error);}
+        .portal-nav .logout-btn:hover{background:#fef2f2;}
+
+        /* Main Content */
+        .portal-main{background:var(--white);border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);}
+        .portal-panel{display:none;}
+        .portal-panel.active{display:block;}
+        .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--gray-200);}
+        .panel-header h2{font-size:1.5rem;font-weight:700;color:var(--dark);}
+        .panel-header p{font-size:0.85rem;color:var(--gray-500);margin-top:0.3rem;}
+
+        /* Profile Form */
+        .profile-form{max-width:600px;}
+        .profile-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+        .profile-form .form-group{margin-bottom:1.5rem;}
+        .profile-form label{display:block;font-size:0.82rem;font-weight:600;color:var(--gray-700);margin-bottom:0.4rem;}
+        .profile-form input,.profile-form textarea,.profile-form select{width:100%;padding:0.75rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:0.9rem;font-family:inherit;transition:var(--transition);}
+        .profile-form input:focus,.profile-form textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.08);}
+        .profile-form textarea{resize:vertical;min-height:100px;}
+        .form-actions{display:flex;gap:0.8rem;padding-top:1rem;}
+        .profile-status{margin-top:1rem;padding:0.7rem 1rem;border-radius:var(--radius-sm);font-size:0.85rem;display:none;}
+        .profile-status.success{display:block;background:#d1fae5;color:#065f46;}
+        .profile-status.error{display:block;background:#fee2e2;color:#991b1b;}
+
+        /* Applications List */
+        .my-apps-list{display:flex;flex-direction:column;gap:1rem;}
+        .my-app-card{padding:1.2rem 1.5rem;border:1px solid var(--gray-200);border-radius:var(--radius-sm);transition:var(--transition);cursor:pointer;position:relative;border-left:4px solid var(--primary);}
+        .my-app-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow-md);}
+        .my-app-card.status-new{border-left-color:#3b82f6;}
+        .my-app-card.status-reviewed{border-left-color:#f59e0b;}
+        .my-app-card.status-in-progress{border-left-color:#8b5cf6;}
+        .my-app-card.status-approved{border-left-color:#10b981;}
+        .my-app-card.status-completed{border-left-color:#10b981;}
+        .my-app-card.status-rejected{border-left-color:#ef4444;}
+        .my-app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;}
+        .my-app-header h4{font-size:1rem;font-weight:700;color:var(--dark);}
+        .my-app-meta{display:flex;gap:1.5rem;font-size:0.82rem;color:var(--gray-500);}
+        .my-app-meta span{display:flex;align-items:center;gap:0.3rem;}
+        .my-app-details{font-size:0.85rem;color:var(--gray-500);line-height:1.6;margin-top:0.5rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+        /* Security Panel */
+        .security-form{max-width:450px;}
+        .security-form .form-group{margin-bottom:1.5rem;}
+        .security-form label{display:block;font-size:0.82rem;font-weight:600;color:var(--gray-700);margin-bottom:0.4rem;}
+        .security-form input{width:100%;padding:0.75rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:0.9rem;font-family:inherit;transition:var(--transition);}
+        .security-form input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.08);}
+        .password-strength{height:4px;border-radius:2px;background:var(--gray-200);margin-top:0.5rem;overflow:hidden;}
+        .password-strength-bar{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;}
+
+        /* Account info cards */
+        .account-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;}
+        .account-info-card{padding:1.2rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);}
+        .account-info-card i{font-size:1.2rem;color:var(--primary);margin-bottom:0.5rem;}
+        .account-info-card h4{font-size:0.8rem;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.3rem;}
+        .account-info-card p{font-size:0.95rem;font-weight:600;color:var(--dark);}
+
+        /* Empty state */
+        .empty-state{text-align:center;padding:3rem;color:var(--gray-400);}
+        .empty-state i{font-size:3rem;margin-bottom:1rem;color:var(--gray-300);}
+        .empty-state h3{font-size:1.1rem;font-weight:600;color:var(--gray-500);margin-bottom:0.5rem;}
+        .empty-state p{font-size:0.88rem;}
+
+        @media(max-width:900px){.portal-container{grid-template-columns:1fr;}.portal-sidebar{position:static;}}
+        @media(max-width:480px){.profile-form .form-row{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Home</a></li>
+                <li><a href="/services.html">Services</a></li>
+                <li><a href="/portfolio.html">Portfolio</a></li>
+                <li><a href="/about.html">About</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+                <li class="auth-nav"><a href="/portal.html" class="btn btn-primary btn-sm active" id="loginBtn"><i class="fas fa-user"></i> Account</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="portal-layout">
+        <div class="container">
+            <div class="portal-container">
+                <!-- Sidebar -->
+                <aside class="portal-sidebar">
+                    <div class="profile-card">
+                        <div class="profile-avatar" id="sidebarAvatar">
+                            <span id="avatarInitial">?</span>
+                            <div class="avatar-edit"><i class="fas fa-camera"></i></div>
+                        </div>
+                        <h3 id="sidebarName">Loading...</h3>
+                        <div class="profile-email" id="sidebarEmail">...</div>
+                        <span class="profile-role" id="sidebarRole">user</span>
+                    </div>
+                    <nav class="portal-nav">
+                        <button class="active" data-panel="overview"><i class="fas fa-home"></i> Overview</button>
+                        <button data-panel="profile"><i class="fas fa-user-edit"></i> Edit Profile</button>
+                        <button data-panel="applications"><i class="fas fa-file-alt"></i> My Applications</button>
+                        <button data-panel="security"><i class="fas fa-shield-alt"></i> Security</button>
+                        <div class="nav-divider"></div>
+                        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </nav>
+                </aside>
+
+                <!-- Main Content -->
+                <main class="portal-main">
+                    <!-- Overview Panel -->
+                    <div class="portal-panel active" id="panel-overview">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Welcome back, <span id="overviewName">User</span></h2>
+                                <p>Here's your account overview</p>
+                            </div>
+                        </div>
+                        <div class="account-info-grid">
+                            <div class="account-info-card"><i class="fas fa-envelope"></i><h4>Email</h4><p id="infoEmail">-</p></div>
+                            <div class="account-info-card"><i class="fas fa-phone"></i><h4>Phone</h4><p id="infoPhone">Not set</p></div>
+                            <div class="account-info-card"><i class="fas fa-building"></i><h4>Company</h4><p id="infoCompany">Not set</p></div>
+                            <div class="account-info-card"><i class="fas fa-map-marker-alt"></i><h4>Location</h4><p id="infoLocation">Not set</p></div>
+                            <div class="account-info-card"><i class="fas fa-calendar"></i><h4>Member Since</h4><p id="infoJoined">-</p></div>
+                            <div class="account-info-card"><i class="fas fa-file-alt"></i><h4>Applications</h4><p id="infoAppsCount">0</p></div>
+                        </div>
+                        <div style="margin-top:1rem;">
+                            <h3 style="font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:1rem;">Recent Applications</h3>
+                            <div id="recentApps"><p class="empty-state"><i class="fas fa-inbox"></i><br>No applications yet</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Panel -->
+                    <div class="portal-panel" id="panel-profile">
+                        <div class="panel-header">
+                            <div><h2>Edit Profile</h2><p>Update your personal information</p></div>
+                        </div>
+                        <form class="profile-form" id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group"><label>Full Name</label><input type="text" id="profName" placeholder="Your full name" required></div>
+                                <div class="form-group"><label>Email</label><input type="email" id="profEmail" disabled></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Phone Number</label><input type="tel" id="profPhone" placeholder="+20 xxx xxx xxxx"></div>
+                                <div class="form-group"><label>Company</label><input type="text" id="profCompany" placeholder="Your company name"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Location</label><input type="text" id="profLocation" placeholder="City, Country"></div>
+                                <div class="form-group"><label>Website</label><input type="url" id="profWebsite" placeholder="https://yoursite.com"></div>
+                            </div>
+                            <div class="form-group"><label>Bio</label><textarea id="profBio" placeholder="Tell us about yourself and what you do..." rows="4"></textarea></div>
+                            <div class="form-group"><label>Avatar URL</label><input type="url" id="profAvatar" placeholder="https://example.com/your-photo.jpg"></div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>&nbsp; Save Changes</button>
+                                <button type="button" class="btn btn-secondary" onclick="loadProfile()">Cancel</button>
+                            </div>
+                        </form>
+                        <div class="profile-status" id="profileStatus"></div>
+                    </div>
+
+                    <!-- Applications Panel -->
+                    <div class="portal-panel" id="panel-applications">
+                        <div class="panel-header">
+                            <div><h2>My Applications</h2><p>Track the status of your service requests</p></div>
+                            <a href="/apply.html" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i>&nbsp; New Application</a>
+                        </div>
+                        <div class="my-apps-list" id="myAppsList">
+                            <div class="empty-state"><i class="fas fa-file-alt"></i><h3>No applications yet</h3><p>Submit a service request to get started</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Security Panel -->
+                    <div class="portal-panel" id="panel-security">
+                        <div class="panel-header">
+                            <div><h2>Security Settings</h2><p>Manage your password and account security</p></div>
+                        </div>
+                        <form class="security-form" id="passwordForm">
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" id="currentPassword" placeholder="Enter current password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" id="newPassword" placeholder="Enter new password (min 6 chars)" required oninput="checkStrength(this.value)">
+                                <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-lock"></i>&nbsp; Update Password</button>
+                            </div>
+                        </form>
+                        <div class="profile-status" id="securityStatus"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API = '/api';
+    let token = localStorage.getItem('token');
+    let currentUser = null;
+
+    // Check auth
+    if (!token) { window.location.href = '/?login=1'; }
+
+    // Navigation
+    document.querySelectorAll('.portal-nav button[data-panel]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.portal-nav button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.portal-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+        });
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/';
+    });
+
+    // Load profile
+    async function loadProfile() {
+        try {
+            const r = await fetch(API + '/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!r.ok) { window.location.href = '/?login=1'; return; }
+            currentUser = await r.json();
+            
+            // Sidebar
+            document.getElementById('sidebarName').textContent = currentUser.name;
+            document.getElementById('sidebarEmail').textContent = currentUser.email;
+            document.getElementById('sidebarRole').textContent = currentUser.role;
+            const initial = currentUser.name.charAt(0).toUpperCase();
+            if (currentUser.avatar) {
+                document.getElementById('sidebarAvatar').innerHTML = `<img src="${esc(currentUser.avatar)}" alt="Avatar"><div class="avatar-edit"><i class="fas fa-camera"></i></div>`;
+            } else {
+                document.getElementById('avatarInitial').textContent = initial;
+            }
+
+            // Overview
+            document.getElementById('overviewName').textContent = currentUser.name.split(' ')[0];
+            document.getElementById('infoEmail').textContent = currentUser.email;
+            document.getElementById('infoPhone').textContent = currentUser.phone || 'Not set';
+            document.getElementById('infoCompany').textContent = currentUser.company || 'Not set';
+            document.getElementById('infoLocation').textContent = currentUser.location || 'Not set';
+            document.getElementById('infoJoined').textContent = new Date(currentUser.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Profile form
+            document.getElementById('profName').value = currentUser.name || '';
+            document.getElementById('profEmail').value = currentUser.email || '';
+            document.getElementById('profPhone').value = currentUser.phone || '';
+            document.getElementById('profCompany').value = currentUser.company || '';
+            document.getElementById('profLocation').value = currentUser.location || '';
+            document.getElementById('profWebsite').value = currentUser.website || '';
+            document.getElementById('profBio').value = currentUser.bio || '';
+            document.getElementById('profAvatar').value = currentUser.avatar || '';
+
+            // Load applications
+            loadMyApplications();
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadMyApplications() {
+        try {
+            const r = await fetch(API + '/auth/applications', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!r.ok) return;
+            const apps = await r.json();
+            document.getElementById('infoAppsCount').textContent = apps.length;
+            
+            // Recent (overview)
+            const recentEl = document.getElementById('recentApps');
+            if (apps.length === 0) {
+                recentEl.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h3>No applications yet</h3><p><a href="/apply.html" style="color:var(--primary);font-weight:600;">Submit your first request &rarr;</a></p></div>';
+            } else {
+                recentEl.innerHTML = apps.slice(0, 3).map(a => renderAppCard(a)).join('');
+            }
+
+            // Full list
+            const listEl = document.getElementById('myAppsList');
+            if (apps.length === 0) {
+                listEl.innerHTML = '<div class="empty-state"><i class="fas fa-file-alt"></i><h3>No applications yet</h3><p><a href="/apply.html" style="color:var(--primary);font-weight:600;">Submit a service request to get started &rarr;</a></p></div>';
+            } else {
+                listEl.innerHTML = apps.map(a => renderAppCard(a)).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function renderAppCard(a) {
+        const statusClass = 'status-' + (a.status || 'new').replace(' ', '-');
+        return `<div class="my-app-card ${statusClass}">
+            <div class="my-app-header">
+                <h4>${esc(a.service)}</h4>
+                <span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status || 'new'}</span>
+            </div>
+            <div class="my-app-meta">
+                <span><i class="fas fa-calendar"></i> ${new Date(a.createdAt).toLocaleDateString()}</span>
+                ${a.budget ? `<span><i class="fas fa-dollar-sign"></i> ${esc(a.budget)}</span>` : ''}
+                ${a.timeline ? `<span><i class="fas fa-clock"></i> ${esc(a.timeline)}</span>` : ''}
+            </div>
+            <div class="my-app-details">${esc(a.details || '')}</div>
+        </div>`;
+    }
+
+    // Save profile
+    document.getElementById('profileForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const status = document.getElementById('profileStatus');
+        const data = {
+            name: document.getElementById('profName').value,
+            phone: document.getElementById('profPhone').value,
+            company: document.getElementById('profCompany').value,
+            location: document.getElementById('profLocation').value,
+            website: document.getElementById('profWebsite').value,
+            bio: document.getElementById('profBio').value,
+            avatar: document.getElementById('profAvatar').value
+        };
+        try {
+            const r = await fetch(API + '/auth/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(data)
+            });
+            if (r.ok) {
+                const updated = await r.json();
+                localStorage.setItem('user', JSON.stringify({ name: updated.name, email: updated.email, role: updated.role }));
+                status.className = 'profile-status success';
+                status.textContent = 'Profile updated successfully!';
+                loadProfile();
+            } else {
+                const d = await r.json();
+                status.className = 'profile-status error';
+                status.textContent = d.error || 'Failed to update profile';
+            }
+        } catch (err) {
+            status.className = 'profile-status error';
+            status.textContent = 'Connection error. Please try again.';
+        }
+        setTimeout(() => { status.className = 'profile-status'; }, 4000);
+    });
+
+    // Change password
+    document.getElementById('passwordForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const status = document.getElementById('securityStatus');
+        const newPw = document.getElementById('newPassword').value;
+        const confirmPw = document.getElementById('confirmPassword').value;
+        if (newPw !== confirmPw) {
+            status.className = 'profile-status error';
+            status.textContent = 'Passwords do not match';
+            return;
+        }
+        try {
+            const r = await fetch(API + '/auth/password', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ currentPassword: document.getElementById('currentPassword').value, newPassword: newPw })
+            });
+            if (r.ok) {
+                status.className = 'profile-status success';
+                status.textContent = 'Password updated successfully!';
+                document.getElementById('passwordForm').reset();
+                document.getElementById('strengthBar').style.width = '0';
+            } else {
+                const d = await r.json();
+                status.className = 'profile-status error';
+                status.textContent = d.error || 'Failed to change password';
+            }
+        } catch (err) {
+            status.className = 'profile-status error';
+            status.textContent = 'Connection error. Please try again.';
+        }
+        setTimeout(() => { status.className = 'profile-status'; }, 4000);
+    });
+
+    // Password strength
+    function checkStrength(pw) {
+        const bar = document.getElementById('strengthBar');
+        let strength = 0;
+        if (pw.length >= 6) strength++;
+        if (pw.length >= 10) strength++;
+        if (/[A-Z]/.test(pw)) strength++;
+        if (/[0-9]/.test(pw)) strength++;
+        if (/[^A-Za-z0-9]/.test(pw)) strength++;
+        const pct = (strength / 5) * 100;
+        const colors = ['#ef4444', '#f59e0b', '#f59e0b', '#10b981', '#10b981'];
+        bar.style.width = pct + '%';
+        bar.style.background = colors[strength - 1] || '#ef4444';
+    }
+
+    function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+    // Mobile nav
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle) navToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+
+    // Scroll
+    window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50); });
+
+    loadProfile();
+    </script>
+</body>
+</html>

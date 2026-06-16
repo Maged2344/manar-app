@@ -1,6 +1,14 @@
 const API_URL = '/api';
 let isLoginMode = true;
 
+// Load Font Awesome if not present
+if (!document.querySelector('link[href*="font-awesome"]')) {
+    const fa = document.createElement('link');
+    fa.rel = 'stylesheet';
+    fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css';
+    document.head.appendChild(fa);
+}
+
 // DOM
 const loginBtn = document.getElementById('loginBtn');
 const loginModal = document.getElementById('loginModal');
@@ -24,16 +32,55 @@ window.addEventListener('scroll', () => { if (navbar) navbar.classList.toggle('s
 // Track visit
 fetch(API_URL + '/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: window.location.pathname }) }).catch(() => {});
 
-// Auth
+// Auth - User Dropdown
 function checkAuth() {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
-    if (token && user && loginBtn) { loginBtn.textContent = user.name; loginBtn.classList.remove('btn-outline'); loginBtn.classList.add('btn-primary'); }
+    if (token && user && loginBtn) {
+        // Replace login button with user dropdown
+        const authLi = loginBtn.parentElement;
+        const initial = user.name ? user.name.charAt(0).toUpperCase() : '?';
+        authLi.innerHTML = `
+            <div class="user-dropdown-wrapper">
+                <button class="user-dropdown-toggle" id="userDropdownBtn">
+                    <span class="user-avatar-sm">${initial}</span>
+                    <span class="user-name-sm">${user.name ? user.name.split(' ')[0] : 'User'}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="user-dropdown-menu" id="userDropdownMenu">
+                    <div class="dropdown-user-info">
+                        <div class="dropdown-avatar">${initial}</div>
+                        <div><strong>${user.name || 'User'}</strong><span>${user.email || ''}</span></div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="/portal.html" class="dropdown-item"><i class="fas fa-user"></i> My Account</a>
+                    <a href="/portal.html#applications" class="dropdown-item"><i class="fas fa-file-alt"></i> My Applications</a>
+                    <a href="/apply.html" class="dropdown-item"><i class="fas fa-plus-circle"></i> New Request</a>
+                    ${user.role === 'admin' ? '<a href="/admin.html" class="dropdown-item"><i class="fas fa-cog"></i> Admin Panel</a>' : ''}
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item dropdown-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+        `;
+        // Toggle dropdown
+        const btn = document.getElementById('userDropdownBtn');
+        const menu = document.getElementById('userDropdownMenu');
+        if (btn && menu) {
+            btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); menu.classList.toggle('show'); });
+            document.addEventListener('click', e => { if (!e.target.closest('.user-dropdown-wrapper')) menu.classList.remove('show'); });
+        }
+    }
+}
+
+function doLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/';
 }
 
 if (loginBtn) loginBtn.addEventListener('click', e => {
     e.preventDefault();
-    if (localStorage.getItem('token')) { if (confirm('Logout?')) { localStorage.removeItem('token'); localStorage.removeItem('user'); location.reload(); } }
+    if (localStorage.getItem('token')) { window.location.href = '/portal.html'; }
     else if (loginModal) loginModal.classList.add('active');
 });
 if (closeModal) closeModal.addEventListener('click', () => loginModal.classList.remove('active'));
@@ -45,6 +92,11 @@ if (toggleAuth) toggleAuth.addEventListener('click', e => {
     authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Create Account';
     nameGroup.style.display = isLoginMode ? 'none' : 'block';
     toggleAuth.textContent = isLoginMode ? 'Register' : 'Sign In';
+    // Toggle extra fields for register
+    const phoneGroup = document.getElementById('regPhoneGroup');
+    const companyGroup = document.getElementById('regCompanyGroup');
+    if (phoneGroup) phoneGroup.style.display = isLoginMode ? 'none' : 'block';
+    if (companyGroup) companyGroup.style.display = isLoginMode ? 'none' : 'block';
 });
 
 if (authForm) authForm.addEventListener('submit', async e => {
@@ -60,10 +112,17 @@ if (authForm) authForm.addEventListener('submit', async e => {
             loginModal.classList.remove('active'); checkAuth();
             if (d.user.role === 'admin') { window.location.href = '/admin.html'; return; }
             notify(isLoginMode ? 'Welcome back!' : 'Account created!', 'success');
+            // Redirect to portal after short delay
+            setTimeout(() => { window.location.href = '/portal.html'; }, 1000);
         }
         else notify(d.error || 'Something went wrong', 'error');
     } catch (err) { notify('Connection error', 'error'); }
 });
+
+// Auto-open login modal if redirected
+if (window.location.search.includes('login=1') && loginModal && !localStorage.getItem('token')) {
+    loginModal.classList.add('active');
+}
 
 // Contact form
 const contactForm = document.getElementById('contactForm');
