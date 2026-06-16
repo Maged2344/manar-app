@@ -263,6 +263,14 @@ app.get('/api/contact', authenticateToken, requireAdmin, async (req, res) => {
   catch (e) { res.status(500).json({ error: 'Failed to get contacts' }); }
 });
 
+app.delete('/api/contact/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const contact = await Contact.findByIdAndDelete(req.params.id);
+    if (!contact) return res.status(404).json({ error: 'Message not found' });
+    res.json({ message: 'Message deleted successfully' });
+  } catch (e) { res.status(500).json({ error: 'Failed to delete message' }); }
+});
+
 // ===== Applications =====
 app.post('/api/applications', async (req, res) => {
   try {

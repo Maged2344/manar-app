@@ -599,7 +599,59 @@
     function renderMessages(msgs){
         const c=document.getElementById('messagesTable');
         if(!msgs.length){c.innerHTML='<p class="empty-state">No messages yet</p>';return;}
-        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Message</th><th>Date</th></tr></thead><tbody>${msgs.map(m=>`<tr><td><strong>${esc(m.name)}</strong></td><td>${esc(m.email)}</td><td>${esc(m.service||'-')}</td><td>${esc((m.message||'').substring(0,60))}${m.message&&m.message.length>60?'...':''}</td><td>${new Date(m.createdAt).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`;
+        let html=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Message</th><th>Date</th><th>Reply / Delete</th></tr></thead><tbody>`;
+        msgs.forEach(m=>{
+            const rowId='msg-'+m._id;
+            const waNum=(m.phone||'').replace(/[\s\-\(\)\+]/g,'').replace(/^0/,'20');
+            const waText=encodeURIComponent(`Hi ${m.name}, thank you for reaching out to Manar Media regarding your message. `);
+            const emailSubject=encodeURIComponent(`Re: Your message to Manar Media${m.service?' about '+m.service:''}`);
+            const emailBody=encodeURIComponent(`Hi ${m.name},\n\nThank you for contacting us.\n\n---\nYour original message:\n${m.message}\n---\n\nBest regards,\nManar Media Team`);
+            const preview=esc((m.message||'').substring(0,60))+(m.message&&m.message.length>60?'...':'');
+            const full=esc(m.message||'');
+            html+=`<tr>
+                <td><strong>${esc(m.name)}</strong>${m.phone?`<div style="font-size:0.75rem;color:var(--gray-500);">${esc(m.phone)}</div>`:''}</td>
+                <td>${esc(m.email)}</td>
+                <td>${esc(m.service||'-')}</td>
+                <td>
+                    <span id="prev-${rowId}">${preview}</span>
+                    <div id="full-${rowId}" style="display:none;white-space:pre-wrap;font-size:0.85rem;color:var(--dark);margin-top:0.3rem;">${full}</div>
+                    ${m.message&&m.message.length>60?`<button onclick="toggleMsg('${rowId}')" style="background:none;border:none;color:var(--primary);font-size:0.75rem;cursor:pointer;padding:0;margin-top:0.2rem;" id="tog-${rowId}">Show more</button>`:''}
+                </td>
+                <td>${new Date(m.createdAt).toLocaleDateString()}</td>
+                <td>
+                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;">
+                        ${waNum?`<a href="https://wa.me/${waNum}?text=${waText}" target="_blank" class="contact-btn whatsapp-btn" style="padding:0.35rem 0.7rem;font-size:0.75rem;" title="Reply on WhatsApp"><i class="fab fa-whatsapp"></i> WA</a>`:''}
+                        <a href="mailto:${esc(m.email)}?subject=${emailSubject}&body=${emailBody}" class="contact-btn email-btn" style="padding:0.35rem 0.7rem;font-size:0.75rem;" title="Reply by Email"><i class="fas fa-envelope"></i> Email</a>
+                        <button class="btn btn-secondary btn-sm" style="color:var(--error);border-color:#fecaca;padding:0.35rem 0.6rem;font-size:0.72rem;" onclick="deleteMessage('${m._id}','${esc(m.name)}')" title="Delete Message"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        html+=`</tbody></table>`;
+        c.innerHTML=html;
+    }
+
+    function toggleMsg(rowId){
+        const prev=document.getElementById('prev-'+rowId);
+        const full=document.getElementById('full-'+rowId);
+        const tog=document.getElementById('tog-'+rowId);
+        if(!prev||!full||!tog)return;
+        const isHidden=full.style.display==='none';
+        prev.style.display=isHidden?'none':'';
+        full.style.display=isHidden?'block':'none';
+        tog.textContent=isHidden?'Show less':'Show more';
+    }
+
+    async function deleteMessage(msgId,msgName){
+        if(!confirm(`Delete message from "${msgName}"? This cannot be undone.`))return;
+        try{
+            const r=await fetch(API+'/contact/'+msgId,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+            const d=await r.json();
+            if(!r.ok){alert(d.error||'Failed to delete message');return;}
+            const contacts=await fetch(API+'/contact',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
+            renderMessages(contacts);
+            document.getElementById('statContacts').textContent=contacts.length;
+        }catch(e){alert('Connection error while deleting message');}
     }
 
     function renderUsers(users){
