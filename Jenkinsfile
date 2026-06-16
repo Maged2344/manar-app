@@ -50,10 +50,10 @@ pipeline {
                     cd $OLDPWD
 
                     # Copy fresh project structure
-                    cp docker-compose.yml $DEPLOY_DIR/docker-compose.yml
-                    cp -r backend $DEPLOY_DIR/backend
-                    cp -r frontend $DEPLOY_DIR/frontend
-                    cp -r nginx $DEPLOY_DIR/nginx
+                    sudo cp docker-compose.yml $DEPLOY_DIR/docker-compose.yml
+                    sudo cp -r backend $DEPLOY_DIR/backend
+                    sudo cp -r frontend $DEPLOY_DIR/frontend
+                    sudo cp -r nginx $DEPLOY_DIR/nginx
 
                     cd $DEPLOY_DIR
                     docker compose build --no-cache
