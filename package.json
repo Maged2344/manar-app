@@ -1,0 +1,8 @@
+{
+  "name": "manar-app",
+  "version": "1.0.0",
+  "description": "Manar App - Full Stack Web Application",
+  "scripts": {
+    "start": "cd backend && node server.js"
+  }
+}

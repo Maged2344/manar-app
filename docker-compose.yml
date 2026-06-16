@@ -1,0 +1,48 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: magedmohamed/manar-app-web:latest
+    container_name: manar-app-web
+    ports:
+      - "127.0.0.1:8090:80"
+    depends_on:
+      - backend
+    networks:
+      - manar-network
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    image: magedmohamed/manar-app-backend:latest
+    container_name: manar-app-backend
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/manarapp
+      - JWT_SECRET=${JWT_SECRET:-manar-app-production-secret-2026}
+      - PORT=3000
+    depends_on:
+      - mongo
+    networks:
+      - manar-network
+      - monitoring-network
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    container_name: manar-app-mongo
+    volumes:
+      - manar_mongo_data:/data/db
+    networks:
+      - manar-network
+    restart: unless-stopped
+
+networks:
+  manar-network:
+    driver: bridge
+  monitoring-network:
+    external: true
+    name: devopsacademy_default
+
+volumes:
+  manar_mongo_data:
