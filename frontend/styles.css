@@ -244,6 +244,12 @@ img { max-width: 100%; height: auto; }
 
 /* ===== Apply/Request Service ===== */
 .apply-section { background: var(--gray-50); }
+
+/* Single service view */
+.service-detail.hidden { display: none; }
+.service-single-header { text-align: center; margin-bottom: 2rem; }
+.service-single-header .back-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem; }
+.service-single-header .back-link:hover { opacity: 0.8; }
 .apply-form { max-width: 700px; margin: 0 auto; background: var(--white); padding: 2.5rem; border-radius: var(--radius); box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); }
 .apply-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .apply-form .form-group { margin-bottom: 1.2rem; }
@@ -257,8 +263,13 @@ img { max-width: 100%; height: auto; }
 .footer-brand .logo { color: #fff; margin-bottom: 1rem; display: inline-flex; }
 .footer-brand p { margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.7; color: var(--gray-400); }
 .social-links { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
-.social-links a { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: var(--gray-400); transition: var(--transition); font-size: 1.1rem; }
-.social-links a:hover { background: var(--primary); color: #fff; }
+.social-links a { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--gray-400); transition: var(--transition); }
+.social-links a:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+.social-links a svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* WhatsApp Float */
+.whatsapp-float { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; background: #25d366; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); z-index: 9999; transition: transform 0.3s, box-shadow 0.3s; }
+.whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6); }
 .footer-links h4 { color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; }
 .footer-links ul li { margin-bottom: 0.6rem; }
 .footer-links ul li a { color: var(--gray-400); font-size: 0.88rem; }

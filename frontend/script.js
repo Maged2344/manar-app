@@ -55,7 +55,12 @@ if (authForm) authForm.addEventListener('submit', async e => {
     try {
         const r = await fetch(API_URL + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const d = await r.json();
-        if (r.ok) { localStorage.setItem('token', d.token); localStorage.setItem('user', JSON.stringify(d.user)); loginModal.classList.remove('active'); checkAuth(); notify(isLoginMode ? 'Welcome back!' : 'Account created!', 'success'); }
+        if (r.ok) {
+            localStorage.setItem('token', d.token); localStorage.setItem('user', JSON.stringify(d.user));
+            loginModal.classList.remove('active'); checkAuth();
+            if (d.user.role === 'admin') { window.location.href = '/admin.html'; return; }
+            notify(isLoginMode ? 'Welcome back!' : 'Account created!', 'success');
+        }
         else notify(d.error || 'Something went wrong', 'error');
     } catch (err) { notify('Connection error', 'error'); }
 });
@@ -111,6 +116,21 @@ function animateCounters() {
 }
 const heroStats = document.querySelector('.hero-stats');
 if (heroStats) { const obs = new IntersectionObserver(e => { if (e[0].isIntersecting) { animateCounters(); obs.disconnect(); } }, { threshold: 0.5 }); obs.observe(heroStats); }
+
+// Services page - show only selected service when hash present
+if (window.location.pathname.includes('services.html') && window.location.hash) {
+    const hash = window.location.hash.slice(1);
+    const allDetails = document.querySelectorAll('.service-detail');
+    let found = false;
+    allDetails.forEach(el => {
+        if (el.id === hash) { el.classList.remove('hidden'); found = true; }
+        else { el.classList.add('hidden'); }
+    });
+    if (found) {
+        const pageHeader = document.querySelector('.page-header p');
+        if (pageHeader) pageHeader.innerHTML = '<a href="/services.html" class="back-link">&larr; View All Services</a>';
+    }
+}
 
 // Notification
 function notify(msg, type) {
