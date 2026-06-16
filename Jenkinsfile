@@ -44,8 +44,8 @@ pipeline {
                     docker compose down || true
 
                     # Clean old files (keep volumes)
-                    rm -rf $DEPLOY_DIR/frontend $DEPLOY_DIR/backend $DEPLOY_DIR/nginx
-                    rm -f $DEPLOY_DIR/docker-compose.yml
+                    sudo rm -rf $DEPLOY_DIR/frontend $DEPLOY_DIR/backend $DEPLOY_DIR/nginx
+                    sudo rm -f $DEPLOY_DIR/docker-compose.yml
 
                     cd $OLDPWD
 
