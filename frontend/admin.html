@@ -33,7 +33,11 @@
         .admin-table tr:hover td{background:var(--gray-50);}
         .badge{display:inline-block;padding:0.15rem 0.6rem;border-radius:50px;font-size:0.72rem;font-weight:600;}
         .badge-new{background:#dbeafe;color:#1e40af;}
-        .badge-reviewed{background:#d1fae5;color:#065f46;}
+        .badge-reviewed{background:#fef3c7;color:#92400e;}
+        .badge-approved{background:#d1fae5;color:#065f46;}
+        .badge-rejected{background:#fee2e2;color:#991b1b;}
+        .badge-in-progress{background:#e0e7ff;color:#3730a3;}
+        .badge-completed{background:#d1fae5;color:#065f46;}
         .badge-user{background:#d1fae5;color:#065f46;}
         .badge-admin{background:#fef3c7;color:#92400e;}
         .table-card{background:var(--white);border-radius:var(--radius-md);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);margin-bottom:1.5rem;}
@@ -50,7 +54,30 @@
         .reach-item{background:var(--gray-50);padding:1rem;border-radius:var(--radius-sm);text-align:center;}
         .reach-item .reach-val{font-size:1.5rem;font-weight:800;color:var(--primary);}
         .reach-item .reach-lbl{font-size:0.75rem;color:var(--gray-500);}
-        @media(max-width:768px){.chart-row{grid-template-columns:1fr;}.stats-grid{grid-template-columns:1fr 1fr;}.reach-summary{grid-template-columns:1fr 1fr;}}
+        .app-row{cursor:pointer;transition:background 0.2s;}
+        .app-row:hover td{background:var(--gray-100)!important;}
+        /* Detail Modal */
+        .detail-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:3000;justify-content:center;align-items:flex-start;padding:5rem 1rem 2rem;}
+        .detail-overlay.active{display:flex;}
+        .detail-card{background:#fff;border-radius:var(--radius);width:100%;max-width:650px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-xl);padding:2rem;}
+        .detail-card .detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;}
+        .detail-card .detail-header h2{font-size:1.3rem;font-weight:700;color:var(--dark);}
+        .detail-card .detail-close{font-size:1.5rem;cursor:pointer;color:var(--gray-400);background:none;border:none;padding:0.3rem;}
+        .detail-card .detail-close:hover{color:var(--dark);}
+        .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;}
+        .detail-field{padding:0.8rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);}
+        .detail-field label{display:block;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.3rem;}
+        .detail-field span{font-size:0.9rem;color:var(--dark);font-weight:500;word-break:break-word;}
+        .detail-full{grid-column:1/-1;}
+        .detail-details{padding:1rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);margin-bottom:1.5rem;}
+        .detail-details label{display:block;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-500);margin-bottom:0.5rem;}
+        .detail-details p{font-size:0.9rem;color:var(--dark);line-height:1.7;white-space:pre-wrap;}
+        .detail-actions{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;padding-top:1rem;border-top:1px solid var(--gray-200);}
+        .detail-actions label{font-size:0.8rem;font-weight:600;color:var(--gray-500);margin-right:0.5rem;}
+        .status-btn{padding:0.4rem 0.9rem;border:1.5px solid var(--gray-200);border-radius:50px;background:transparent;cursor:pointer;font-weight:600;font-size:0.78rem;transition:var(--transition);}
+        .status-btn:hover{border-color:var(--primary);color:var(--primary);}
+        .status-btn.active-status{background:var(--primary);color:#fff;border-color:var(--primary);}
+        @media(max-width:768px){.chart-row{grid-template-columns:1fr;}.stats-grid{grid-template-columns:1fr 1fr;}.reach-summary{grid-template-columns:1fr 1fr;}.detail-grid{grid-template-columns:1fr;}}
     </style>
 </head>
 <body>
@@ -140,6 +167,27 @@
         </div>
     </div>
 
+    <!-- Application Detail Modal -->
+    <div class="detail-overlay" id="appDetailOverlay">
+        <div class="detail-card">
+            <div class="detail-header">
+                <h2 id="detailTitle">Application Details</h2>
+                <button class="detail-close" onclick="closeDetail()">&times;</button>
+            </div>
+            <div class="detail-grid" id="detailGrid"></div>
+            <div class="detail-details" id="detailMessage"></div>
+            <div class="detail-actions">
+                <label>Update Status:</label>
+                <button class="status-btn" data-status="new" onclick="setStatus('new')">New</button>
+                <button class="status-btn" data-status="reviewed" onclick="setStatus('reviewed')">Reviewed</button>
+                <button class="status-btn" data-status="in-progress" onclick="setStatus('in-progress')">In Progress</button>
+                <button class="status-btn" data-status="approved" onclick="setStatus('approved')">Approved</button>
+                <button class="status-btn" data-status="completed" onclick="setStatus('completed')">Completed</button>
+                <button class="status-btn" data-status="rejected" onclick="setStatus('rejected')">Rejected</button>
+            </div>
+        </div>
+    </div>
+
     <script>
     const API='/api';
     let token=localStorage.getItem('token');
@@ -219,7 +267,44 @@
     function renderApplications(apps){
         const c=document.getElementById('applicationsTable');
         if(!apps.length){c.innerHTML='<p class="empty-state">No applications yet</p>';return;}
-        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Budget</th><th>Timeline</th><th>Date</th><th>Status</th></tr></thead><tbody>${apps.map(a=>`<tr><td><strong>${esc(a.name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.service)}</td><td>${esc(a.budget||'-')}</td><td>${esc(a.timeline||'-')}</td><td>${new Date(a.createdAt).toLocaleDateString()}</td><td><span class="badge badge-${a.status==='reviewed'?'reviewed':'new'}">${a.status||'new'}</span></td></tr>`).join('')}</tbody></table>`;
+        c.innerHTML=`<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Service</th><th>Company</th><th>Budget</th><th>Timeline</th><th>Date</th><th>Status</th></tr></thead><tbody>${apps.map((a,i)=>`<tr class="app-row" onclick="openDetail(${i})"><td><strong>${esc(a.name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.phone||'-')}</td><td>${esc(a.service)}</td><td>${esc(a.company||'-')}</td><td>${esc(a.budget||'-')}</td><td>${esc(a.timeline||'-')}</td><td>${new Date(a.createdAt).toLocaleDateString()}</td><td><span class="badge badge-${(a.status||'new').replace(' ','-')}">${a.status||'new'}</span></td></tr>`).join('')}</tbody></table>`;
+        window._appsList=apps;
+    }
+
+    let currentAppId=null;
+    function openDetail(idx){
+        const a=window._appsList[idx]; if(!a)return;
+        currentAppId=a._id;
+        document.getElementById('detailTitle').textContent=`Application - ${a.name}`;
+        document.getElementById('detailGrid').innerHTML=`
+            <div class="detail-field"><label>Full Name</label><span>${esc(a.name)}</span></div>
+            <div class="detail-field"><label>Email</label><span>${esc(a.email)}</span></div>
+            <div class="detail-field"><label>Phone</label><span>${esc(a.phone||'-')}</span></div>
+            <div class="detail-field"><label>Company</label><span>${esc(a.company||'-')}</span></div>
+            <div class="detail-field"><label>Service Requested</label><span>${esc(a.service)}</span></div>
+            <div class="detail-field"><label>Budget</label><span>${esc(a.budget||'Not specified')}</span></div>
+            <div class="detail-field"><label>Timeline</label><span>${esc(a.timeline||'Not specified')}</span></div>
+            <div class="detail-field"><label>Submitted</label><span>${new Date(a.createdAt).toLocaleString()}</span></div>
+        `;
+        document.getElementById('detailMessage').innerHTML=`<label>Project Details</label><p>${esc(a.details||'No details provided')}</p>`;
+        // Highlight current status
+        document.querySelectorAll('.status-btn').forEach(b=>{b.classList.toggle('active-status',b.dataset.status===(a.status||'new'));});
+        document.getElementById('appDetailOverlay').classList.add('active');
+    }
+    function closeDetail(){document.getElementById('appDetailOverlay').classList.remove('active');currentAppId=null;}
+    document.getElementById('appDetailOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('appDetailOverlay'))closeDetail();});
+
+    async function setStatus(status){
+        if(!currentAppId)return;
+        try{
+            const r=await fetch(API+'/admin/applications/'+currentAppId,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({status})});
+            if(r.ok){
+                document.querySelectorAll('.status-btn').forEach(b=>{b.classList.toggle('active-status',b.dataset.status===status);});
+                // Refresh table
+                const apps=await fetch(API+'/admin/applications',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json());
+                renderApplications(apps);
+            }
+        }catch(e){console.error(e);}
     }
 
     function renderMessages(msgs){

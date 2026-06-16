@@ -176,6 +176,17 @@ app.get('/api/admin/applications', authenticateToken, requireAdmin, async (req, 
   catch (e) { res.status(500).json({ error: 'Failed to get applications' }); }
 });
 
+app.patch('/api/admin/applications/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ['new', 'reviewed', 'approved', 'rejected', 'in-progress', 'completed'];
+    if (!status || !allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    const app = await Application.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!app) return res.status(404).json({ error: 'Application not found' });
+    res.json(app);
+  } catch (e) { res.status(500).json({ error: 'Failed to update application' }); }
+});
+
 // ===== Admin =====
 app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
   try { const users = await User.find().select('-password').sort({ createdAt: -1 }).limit(100); res.json(users); }
