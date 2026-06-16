@@ -35,9 +35,24 @@ app.use((req, res, next) => {
     const duration = (Date.now() - start) / 1000;
     httpRequestsTotal.inc({ method: req.method, route: req.path, status: res.statusCode });
     httpRequestDuration.observe({ method: req.method, route: req.path, status: res.statusCode }, duration);
+
+    // Track visitor requests
+    visitorLog.push({
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      userAgent: req.headers['user-agent'] || '',
+      timestamp: new Date()
+    });
+    if (visitorLog.length > MAX_LOG_SIZE) visitorLog.shift();
   });
   next();
 });
+
+// In-memory visitor tracking
+const visitorLog = [];
+const MAX_LOG_SIZE = 1000;
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongo:27017/manarapp';
@@ -245,6 +260,59 @@ app.get('/api/portfolio', (req, res) => {
     return res.json(portfolio.filter(p => p.category === category));
   }
   res.json(portfolio);
+});
+
+// ===== Admin Routes =====
+
+// Admin stats overview
+app.get('/api/admin/stats', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    const totalUsers = await User.countDocuments();
+    const totalContacts = await Contact.countDocuments();
+    const totalRequests = visitorLog.length;
+    const totalVisits = visitorLog.filter(v => !v.path.startsWith('/api/')).length;
+    res.json({ totalUsers, totalContacts, totalRequests, totalVisits });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// Admin get all users
+app.get('/api/admin/users', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    const users = await User.find().select('-password').sort({ createdAt: -1 }).limit(100);
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
+// Admin get visitor data (aggregated by path)
+app.get('/api/admin/visitors', authenticateToken, (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    // Aggregate visits by method + path
+    const aggregated = {};
+    visitorLog.forEach(v => {
+      const key = v.method + ' ' + v.path;
+      if (!aggregated[key]) {
+        aggregated[key] = { method: v.method, path: v.path, count: 0 };
+      }
+      aggregated[key].count++;
+    });
+    const sorted = Object.values(aggregated).sort((a, b) => b.count - a.count).slice(0, 30);
+    res.json(sorted);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get visitor data' });
+  }
 });
 
 // Start server

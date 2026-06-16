@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Manar Media</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout { padding-top: 80px; min-height: 100vh; background: var(--bg-section-alt); }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .admin-header h1 { font-size: 2rem; font-weight: 800; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: #fff; padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; border: 1px solid var(--border); }
+        .stat-card .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--primary); }
+        .stat-card .stat-title { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.3rem; }
+        .admin-section { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border); }
+        .admin-section h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .admin-table th { text-align: left; padding: 0.8rem 1rem; background: var(--bg-section-alt); font-weight: 600; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .admin-table td { padding: 0.8rem 1rem; border-top: 1px solid var(--border); color: var(--text-primary); }
+        .admin-table tr:hover td { background: var(--bg-section-alt); }
+        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .badge-new { background: #dbeafe; color: #1e40af; }
+        .badge-user { background: #d1fae5; color: #065f46; }
+        .badge-admin { background: #fef3c7; color: #92400e; }
+        .admin-login { max-width: 400px; margin: 5rem auto; background: #fff; padding: 2.5rem; border-radius: var(--radius); box-shadow: var(--shadow-lg); }
+        .admin-login h2 { text-align: center; margin-bottom: 1.5rem; }
+        .admin-login .form-group { margin-bottom: 1.2rem; }
+        .admin-login label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .admin-login input { width: 100%; padding: 0.8rem 1rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; }
+        .admin-login input:focus { outline: none; border-color: var(--primary); }
+        .admin-error { color: #dc2626; font-size: 0.9rem; margin-top: 1rem; text-align: center; display: none; }
+        .visitors-list { display: flex; flex-direction: column; gap: 0.8rem; }
+        .visitor-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; background: var(--bg-section-alt); border-radius: var(--radius-sm); }
+        .visitor-item .visitor-path { font-weight: 600; color: var(--text-primary); }
+        .visitor-item .visitor-count { background: var(--primary); color: var(--bg-dark); padding: 0.2rem 0.8rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; }
+        .refresh-btn { background: none; border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; color: var(--text-secondary); transition: var(--transition); }
+        .refresh-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .empty-state { text-align: center; padding: 2rem; color: var(--text-muted); }
+        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .tab-btn { padding: 0.5rem 1.2rem; border: 2px solid var(--border); border-radius: 50px; background: transparent; cursor: pointer; font-weight: 500; transition: var(--transition); }
+        .tab-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(0,212,255,0.05); }
+        @media (max-width: 768px) { .admin-table { font-size: 0.8rem; } .admin-table th, .admin-table td { padding: 0.6rem 0.5rem; } .stats-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Home</a></li>
+                <li><a href="/admin.html" class="active">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Login Form (shown if not authenticated) -->
+    <div id="adminLoginSection" class="admin-layout" style="display:none;">
+        <div class="admin-login">
+            <h2>Admin Login</h2>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminEmail">Email</label>
+                    <input type="email" id="adminEmail" required placeholder="admin@manar.com">
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" required placeholder="Password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                <p class="admin-error" id="loginError"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (shown if authenticated) -->
+    <div id="adminDashboard" class="admin-layout" style="display:none;">
+        <div class="container">
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <div>
+                    <button class="refresh-btn" onclick="loadDashboard()">&#8635; Refresh</button>
+                    <button class="refresh-btn" onclick="logout()" style="margin-left:0.5rem; color:#dc2626; border-color:#dc2626;">Logout</button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalUsers">-</div>
+                    <div class="stat-title">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalContacts">-</div>
+                    <div class="stat-title">Contact Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalRequests">-</div>
+                    <div class="stat-title">API Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalVisits">-</div>
+                    <div class="stat-title">Page Visits</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="contacts">Messages</button>
+                <button class="tab-btn" data-tab="users">Users</button>
+                <button class="tab-btn" data-tab="visitors">Visitors</button>
+            </div>
+
+            <!-- Contact Messages -->
+            <div class="admin-section tab-content" id="tab-contacts">
+                <h2>Contact Messages</h2>
+                <div id="contactsTable">
+                    <p class="empty-state">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Users -->
+            <div class="admin-section tab-content" id="tab-users" style="display:none;">
+                <h2>Registered Users</h2>
+                <div id="usersTable">
+                    <p class="empty-state">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Visitors / Requests -->
+            <div class="admin-section tab-content" id="tab-visitors" style="display:none;">
+                <h2>Recent Visitor Activity</h2>
+                <div id="visitorsData">
+                    <p class="empty-state">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let token = localStorage.getItem('token');
+        let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+        // Check auth on load
+        function init() {
+            if (token && currentUser && currentUser.role === 'admin') {
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('adminLoginSection').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        function showDashboard() {
+            document.getElementById('adminLoginSection').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            loadDashboard();
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            token = null;
+            currentUser = null;
+            showLogin();
+        }
+
+        // Login
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            const errorEl = document.getElementById('loginError');
+
+            try {
+                const res = await fetch(API_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    if (data.user.role !== 'admin') {
+                        errorEl.textContent = 'Access denied. Admin role required.';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    token = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    errorEl.style.display = 'none';
+                    showDashboard();
+                } else {
+                    errorEl.textContent = data.error || 'Login failed';
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.textContent = 'Connection error';
+                errorEl.style.display = 'block';
+            }
+        });
+
+        // Load Dashboard
+        async function loadDashboard() {
+            const headers = { 'Authorization': 'Bearer ' + token };
+
+            try {
+                const [statsRes, contactsRes, usersRes, visitorsRes] = await Promise.all([
+                    fetch(API_URL + '/admin/stats', { headers }),
+                    fetch(API_URL + '/contact', { headers }),
+                    fetch(API_URL + '/admin/users', { headers }),
+                    fetch(API_URL + '/admin/visitors', { headers })
+                ]);
+
+                // Stats
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                    document.getElementById('totalContacts').textContent = stats.totalContacts || 0;
+                    document.getElementById('totalRequests').textContent = stats.totalRequests || 0;
+                    document.getElementById('totalVisits').textContent = stats.totalVisits || 0;
+                }
+
+                // Contacts
+                if (contactsRes.ok) {
+                    const contacts = await contactsRes.json();
+                    renderContacts(contacts);
+                }
+
+                // Users
+                if (usersRes.ok) {
+                    const users = await usersRes.json();
+                    renderUsers(users);
+                }
+
+                // Visitors
+                if (visitorsRes.ok) {
+                    const visitors = await visitorsRes.json();
+                    renderVisitors(visitors);
+                }
+            } catch (err) {
+                console.error('Dashboard load error:', err);
+            }
+        }
+
+        function renderContacts(contacts) {
+            const container = document.getElementById('contactsTable');
+            if (!contacts.length) {
+                container.innerHTML = '<p class="empty-state">No messages yet</p>';
+                return;
+            }
+            container.innerHTML = `
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Message</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody>${contacts.map(c => `
+                        <tr>
+                            <td><strong>${esc(c.name)}</strong></td>
+                            <td>${esc(c.email)}</td>
+                            <td>${esc(c.service || '-')}</td>
+                            <td>${esc(c.message.substring(0, 50))}${c.message.length > 50 ? '...' : ''}</td>
+                            <td>${new Date(c.createdAt).toLocaleDateString()}</td>
+                            <td><span class="badge badge-new">${c.status || 'new'}</span></td>
+                        </tr>
+                    `).join('')}</tbody>
+                </table>
+            `;
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('usersTable');
+            if (!users.length) {
+                container.innerHTML = '<p class="empty-state">No users yet</p>';
+                return;
+            }
+            container.innerHTML = `
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Registered</th></tr></thead>
+                    <tbody>${users.map(u => `
+                        <tr>
+                            <td><strong>${esc(u.name)}</strong></td>
+                            <td>${esc(u.email)}</td>
+                            <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-user'}">${u.role}</span></td>
+                            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('')}</tbody>
+                </table>
+            `;
+        }
+
+        function renderVisitors(visitors) {
+            const container = document.getElementById('visitorsData');
+            if (!visitors.length) {
+                container.innerHTML = '<p class="empty-state">No visitor data yet</p>';
+                return;
+            }
+            container.innerHTML = `
+                <div class="visitors-list">
+                    ${visitors.map(v => `
+                        <div class="visitor-item">
+                            <span class="visitor-path">${v.method} ${esc(v.path)}</span>
+                            <span class="visitor-count">${v.count} requests</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+            });
+        });
+
+        init();
+    </script>
+</body>
+</html>

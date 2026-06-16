@@ -358,6 +358,10 @@ img {
     box-shadow: var(--shadow);
     transition: var(--transition);
     border: 1px solid var(--border);
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
 }
 
 .service-card:hover {
