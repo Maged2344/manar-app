@@ -54,7 +54,18 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+const contactSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, default: '' },
+  service: { type: String, default: '' },
+  message: { type: String, required: true },
+  status: { type: String, default: 'new' },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const User = mongoose.model('User', userSchema);
+const Contact = mongoose.model('Contact', contactSchema);
 
 // ===== JWT Middleware =====
 const JWT_SECRET = process.env.JWT_SECRET || 'manar-app-secret-key';
@@ -75,7 +86,7 @@ const authenticateToken = (req, res, next) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', app: 'manar-app', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', app: 'manar-media', timestamp: new Date().toISOString() });
 });
 
 // Prometheus metrics endpoint
@@ -84,12 +95,17 @@ app.get('/metrics', async (req, res) => {
   res.end(await promClient.register.metrics());
 });
 
+// ===== Auth Routes =====
+
 // Register
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -109,6 +125,9 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
     const validPassword = await bcrypt.compare(password, user.password);
@@ -131,8 +150,105 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
   }
 });
 
+// ===== Contact Routes =====
+
+// Submit contact form
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, message, phone, service } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Name, email, and message are required' });
+    }
+    const contact = new Contact({ name, email, phone, service, message });
+    await contact.save();
+    res.status(201).json({ message: 'Message sent successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+// Get all contact submissions (admin)
+app.get('/api/contact', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    const contacts = await Contact.find().sort({ createdAt: -1 }).limit(50);
+    res.json(contacts);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get contacts' });
+  }
+});
+
+// ===== Services Routes =====
+
+// Get services list
+app.get('/api/services', (req, res) => {
+  const services = [
+    {
+      id: 'video',
+      title: 'Video Production',
+      description: 'Cinematic commercials, corporate videos, and social media content.',
+      features: ['Commercial & Brand Videos', 'Corporate Documentaries', 'Social Media Content', 'Motion Graphics', 'Event Coverage', 'Product Demos']
+    },
+    {
+      id: 'branding',
+      title: 'Branding & Design',
+      description: 'Complete brand identity and visual systems.',
+      features: ['Logo Design', 'Brand Strategy', 'Print & Packaging', 'UI/UX Design', 'Social Media Templates', 'Marketing Collateral']
+    },
+    {
+      id: 'photography',
+      title: 'Photography',
+      description: 'Professional photography that tells your story.',
+      features: ['Product Photography', 'Corporate Headshots', 'Event Photography', 'Lifestyle & Editorial', 'Food & Interior', 'Drone/Aerial']
+    },
+    {
+      id: 'marketing',
+      title: 'Digital Marketing',
+      description: 'Data-driven campaigns for maximum impact.',
+      features: ['Social Media Management', 'SEO & Content Marketing', 'Paid Advertising', 'Email Marketing', 'Influencer Partnerships', 'Analytics']
+    },
+    {
+      id: 'web',
+      title: 'Web Development',
+      description: 'Modern websites that convert visitors to customers.',
+      features: ['Custom Websites', 'E-commerce', 'Web Applications', 'Landing Pages', 'CMS Integration', 'Performance Optimization']
+    },
+    {
+      id: 'content',
+      title: 'Content Strategy',
+      description: 'Strategic content planning for engagement and growth.',
+      features: ['Content Calendars', 'Copywriting', 'Script Writing', 'Brand Voice', 'Content Audits', 'SEO Optimization']
+    }
+  ];
+  res.json(services);
+});
+
+// ===== Portfolio Routes =====
+
+// Get portfolio items
+app.get('/api/portfolio', (req, res) => {
+  const portfolio = [
+    { id: 1, title: 'TechStart Launch Campaign', category: 'video', description: 'Brand launch video series' },
+    { id: 2, title: 'Nile Corp Rebrand', category: 'branding', description: 'Complete brand identity redesign' },
+    { id: 3, title: 'Luxor Hotel Collection', category: 'photography', description: 'Luxury hospitality photography' },
+    { id: 4, title: 'GrowthLab Platform', category: 'web', description: 'Full-stack web application' },
+    { id: 5, title: 'Food Festival Promo', category: 'video', description: 'Event promotional video' },
+    { id: 6, title: 'Sahara Fitness', category: 'branding', description: 'Brand identity for fitness chain' },
+    { id: 7, title: 'Cairo Fashion Week', category: 'photography', description: 'Editorial fashion photography' },
+    { id: 8, title: 'E-Commerce Redesign', category: 'web', description: 'UX overhaul with 150% conversion increase' }
+  ];
+
+  const { category } = req.query;
+  if (category && category !== 'all') {
+    return res.json(portfolio.filter(p => p.category === category));
+  }
+  res.json(portfolio);
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Manar App backend running on port ${PORT}`);
+  console.log(`Manar Media backend running on port ${PORT}`);
 });

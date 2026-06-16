@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - Manar Media</title>
+    <meta name="description" content="View our portfolio of successful projects across video production, branding, photography, and digital marketing.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Home</a></li>
+                <li><a href="/services.html">Services</a></li>
+                <li><a href="/portfolio.html" class="active">Portfolio</a></li>
+                <li><a href="/about.html">About</a></li>
+                <li><a href="/faq.html">FAQ</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+                <li class="auth-nav">
+                    <a href="#" id="loginBtn" class="btn btn-outline btn-sm">Sign In</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Our <span class="highlight">Portfolio</span></h1>
+            <p>A showcase of our best work across industries</p>
+        </div>
+    </section>
+
+    <!-- Portfolio Filter -->
+    <section class="section">
+        <div class="container">
+            <div class="portfolio-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="video">Video</button>
+                <button class="filter-btn" data-filter="branding">Branding</button>
+                <button class="filter-btn" data-filter="photography">Photography</button>
+                <button class="filter-btn" data-filter="web">Web</button>
+            </div>
+
+            <div class="portfolio-grid">
+                <div class="portfolio-item" data-category="video">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <span class="portfolio-badge">Video</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>TechStart Launch Campaign</h3>
+                            <p>Brand launch video series for Egypt's fastest growing startup</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="branding">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <span class="portfolio-badge">Branding</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Nile Corp Rebrand</h3>
+                            <p>Complete brand identity redesign for a Fortune 500 company</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="photography">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <span class="portfolio-badge">Photography</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Luxor Hotel Collection</h3>
+                            <p>Luxury hospitality photography for premium resort chain</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="web">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <span class="portfolio-badge">Web</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>GrowthLab Platform</h3>
+                            <p>Full-stack web application for marketing analytics</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="video">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <span class="portfolio-badge">Video</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Food Festival Promo</h3>
+                            <p>Event promotional video with 2M+ views on social media</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="branding">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
+                            <span class="portfolio-badge">Branding</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Sahara Fitness</h3>
+                            <p>Brand identity and marketing materials for fitness chain</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="photography">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);">
+                            <span class="portfolio-badge">Photography</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Cairo Fashion Week</h3>
+                            <p>Editorial fashion photography for major runway events</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" data-category="web">
+                    <div class="portfolio-card">
+                        <div class="portfolio-image" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                            <span class="portfolio-badge">Web</span>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>E-Commerce Redesign</h3>
+                            <p>Complete UX overhaul resulting in 150% conversion increase</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Want to Be Our Next Success Story?</h2>
+                <p>Let's bring your vision to life with creativity and precision.</p>
+                <a href="/contact.html" class="btn btn-primary btn-lg">Start Your Project</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a>
+                    <p>Professional media production and digital marketing services. Elevating brands since 2018.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/services.html">Services</a></li>
+                        <li><a href="/portfolio.html">Portfolio</a></li>
+                        <li><a href="/about.html">About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="/services.html">Video Production</a></li>
+                        <li><a href="/services.html">Branding</a></li>
+                        <li><a href="/services.html">Photography</a></li>
+                        <li><a href="/services.html">Digital Marketing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>info@manar.cloud-stacks.com</li>
+                        <li>Cairo, Egypt</li>
+                        <li><a href="/contact.html">Get in Touch</a></li>
+                        <li><a href="/faq.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Manar Media. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

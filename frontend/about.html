@@ -3,42 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - Manar App</title>
+    <title>About - Manar Media</title>
+    <meta name="description" content="Learn about Manar Media - our story, mission, and the talented team behind our success.">
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <h1>Manar App</h1>
-        </div>
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="about.html" class="active">About</a>
-            <a href="#" id="loginBtn">Login</a>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Home</a></li>
+                <li><a href="/services.html">Services</a></li>
+                <li><a href="/portfolio.html">Portfolio</a></li>
+                <li><a href="/about.html" class="active">About</a></li>
+                <li><a href="/faq.html">FAQ</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+                <li class="auth-nav">
+                    <a href="#" id="loginBtn" class="btn btn-outline btn-sm">Sign In</a>
+                </li>
+            </ul>
         </div>
     </nav>
 
-    <main class="container">
-        <h1>About Manar App</h1>
-        <p>Manar App is a modern web application built with a full DevOps pipeline.</p>
-        <div class="features">
-            <div class="feature-card">
-                <h3>Fast & Reliable</h3>
-                <p>Built with Node.js and MongoDB for high performance.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Fully Automated</h3>
-                <p>CI/CD pipeline with Jenkins and Docker.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Monitored</h3>
-                <p>Integrated with Prometheus and Grafana for observability.</p>
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>About <span class="highlight">Us</span></h1>
+            <p>The story behind Manar Media</p>
+        </div>
+    </section>
+
+    <!-- Our Story -->
+    <section class="section">
+        <div class="container">
+            <div class="about-story">
+                <div class="about-text">
+                    <h2>Our <span class="highlight">Story</span></h2>
+                    <p>Founded in 2018, Manar Media started with a simple mission: to help businesses tell their stories through powerful visual content. What began as a two-person video production team has grown into a full-service media agency serving clients across the Middle East and beyond.</p>
+                    <p>Today, our team of 25+ creatives, strategists, and technologists work together to deliver exceptional results. We've produced over 500 projects for 120+ clients, from startups to Fortune 500 companies.</p>
+                    <p>We believe in the power of creative storytelling to transform brands and drive business growth. Every project we take on is an opportunity to push boundaries and exceed expectations.</p>
+                </div>
+                <div class="about-values">
+                    <div class="value-card">
+                        <h3>&#127919; Mission</h3>
+                        <p>To empower businesses with compelling visual stories and data-driven marketing solutions that drive measurable results.</p>
+                    </div>
+                    <div class="value-card">
+                        <h3>&#128065; Vision</h3>
+                        <p>To be the leading creative media agency in the MENA region, known for innovation, quality, and client success.</p>
+                    </div>
+                    <div class="value-card">
+                        <h3>&#9829; Values</h3>
+                        <p>Creativity, integrity, excellence, collaboration, and continuous innovation in everything we do.</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+    </section>
 
-    <footer>
-        <p>&copy; 2026 Manar App. All rights reserved.</p>
+    <!-- Team -->
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2>Meet Our <span class="highlight">Team</span></h2>
+                <p>The talented people who make it all happen</p>
+            </div>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">M</div>
+                    <h3>Mohamed Ali</h3>
+                    <span class="team-role">Founder & Creative Director</span>
+                    <p>10+ years in media production. Passionate about visual storytelling.</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">N</div>
+                    <h3>Nour Ibrahim</h3>
+                    <span class="team-role">Head of Strategy</span>
+                    <p>Digital marketing expert with a track record of 10x growth campaigns.</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">Y</div>
+                    <h3>Youssef Kamal</h3>
+                    <span class="team-role">Lead Videographer</span>
+                    <p>Award-winning cinematographer with experience across 3 continents.</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">L</div>
+                    <h3>Layla Hassan</h3>
+                    <span class="team-role">Design Lead</span>
+                    <p>Brand identity specialist who has designed for 50+ major brands.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="section">
+        <div class="container">
+            <div class="about-stats">
+                <div class="about-stat-item">
+                    <span class="about-stat-number">8+</span>
+                    <span class="about-stat-label">Years in Business</span>
+                </div>
+                <div class="about-stat-item">
+                    <span class="about-stat-number">500+</span>
+                    <span class="about-stat-label">Projects Completed</span>
+                </div>
+                <div class="about-stat-item">
+                    <span class="about-stat-number">120+</span>
+                    <span class="about-stat-label">Clients Served</span>
+                </div>
+                <div class="about-stat-item">
+                    <span class="about-stat-number">15+</span>
+                    <span class="about-stat-label">Industry Awards</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a>
+                    <p>Professional media production and digital marketing services. Elevating brands since 2018.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/services.html">Services</a></li>
+                        <li><a href="/portfolio.html">Portfolio</a></li>
+                        <li><a href="/about.html">About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="/services.html">Video Production</a></li>
+                        <li><a href="/services.html">Branding</a></li>
+                        <li><a href="/services.html">Photography</a></li>
+                        <li><a href="/services.html">Digital Marketing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li>info@manar.cloud-stacks.com</li>
+                        <li>Cairo, Egypt</li>
+                        <li><a href="/contact.html">Get in Touch</a></li>
+                        <li><a href="/faq.html">FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Manar Media. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 
     <script src="script.js"></script>
