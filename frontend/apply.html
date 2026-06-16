@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request a Service - Manar Media</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Home</a></li>
+                <li><a href="/services.html">Services</a></li>
+                <li><a href="/portfolio.html">Portfolio</a></li>
+                <li><a href="/about.html">About</a></li>
+                <li><a href="/pricing.html">Pricing</a></li>
+                <li><a href="/faq.html">FAQ</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+                <li class="auth-nav"><a href="#" id="loginBtn" class="btn btn-outline btn-sm">Sign In</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h1>Request a <span class="highlight">Service</span></h1>
+            <p>Tell us about your project and we'll get back to you within 24 hours</p>
+        </div>
+    </section>
+
+    <section class="section apply-section">
+        <div class="container">
+            <form class="apply-form" id="applyForm">
+                <div class="form-row">
+                    <div class="form-group"><label for="applyName">Full Name *</label><input type="text" id="applyName" name="name" required placeholder="Your full name"></div>
+                    <div class="form-group"><label for="applyEmail">Email *</label><input type="email" id="applyEmail" name="email" required placeholder="your@email.com"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="applyPhone">Phone *</label><input type="tel" id="applyPhone" name="phone" required placeholder="+20 xxx xxx xxxx"></div>
+                    <div class="form-group"><label for="applyCompany">Company / Brand</label><input type="text" id="applyCompany" name="company" placeholder="Your company name"></div>
+                </div>
+                <div class="form-group">
+                    <label for="applyService">Service Needed *</label>
+                    <select id="applyService" name="service" required>
+                        <option value="">Select a service</option>
+                        <option value="Video Production">Video Production</option>
+                        <option value="Branding & Design">Branding & Design</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Digital Marketing">Digital Marketing</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Content Strategy">Content Strategy</option>
+                        <option value="Full Package">Full Package (Multiple Services)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="applyBudget">Budget Range</label>
+                        <select id="applyBudget" name="budget">
+                            <option value="">Select budget range</option>
+                            <option value="Under $1,000">Under $1,000</option>
+                            <option value="$1,000 - $5,000">$1,000 - $5,000</option>
+                            <option value="$5,000 - $15,000">$5,000 - $15,000</option>
+                            <option value="$15,000 - $50,000">$15,000 - $50,000</option>
+                            <option value="$50,000+">$50,000+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="applyTimeline">Timeline</label>
+                        <select id="applyTimeline" name="timeline">
+                            <option value="">Select timeline</option>
+                            <option value="ASAP">ASAP (Rush)</option>
+                            <option value="1-2 weeks">1-2 weeks</option>
+                            <option value="2-4 weeks">2-4 weeks</option>
+                            <option value="1-2 months">1-2 months</option>
+                            <option value="3+ months">3+ months</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="applyDetails">Project Details *</label>
+                    <textarea id="applyDetails" name="details" rows="5" required placeholder="Describe your project, goals, and any specific requirements..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full btn-lg">Submit Application</button>
+                <div id="applyStatus" class="form-status"></div>
+            </form>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand"><a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a><p>Professional media production and digital marketing services. Elevating brands since 2018.</p></div>
+                <div class="footer-links"><h4>Quick Links</h4><ul><li><a href="/">Home</a></li><li><a href="/services.html">Services</a></li><li><a href="/portfolio.html">Portfolio</a></li><li><a href="/about.html">About</a></li></ul></div>
+                <div class="footer-links"><h4>Services</h4><ul><li><a href="/services.html#video">Video Production</a></li><li><a href="/services.html#branding">Branding</a></li><li><a href="/services.html#photography">Photography</a></li><li><a href="/services.html#marketing">Digital Marketing</a></li></ul></div>
+                <div class="footer-links"><h4>Contact</h4><ul><li>info@manar.cloud-stacks.com</li><li>Cairo, Egypt</li><li>+20 123 456 7890</li><li><a href="/contact.html">Get in Touch</a></li></ul></div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2026 Manar Media. All rights reserved.</p></div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

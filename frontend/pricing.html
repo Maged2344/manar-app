@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Manar Media</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;}
+        .pricing-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:2.5rem;text-align:center;transition:var(--transition);position:relative;}
+        .pricing-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+        .pricing-card.popular{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary);}
+        .pricing-card.popular::before{content:'Most Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:0.3rem 1rem;border-radius:50px;font-size:0.75rem;font-weight:600;}
+        .pricing-card h3{font-size:1.3rem;font-weight:700;margin-bottom:0.5rem;color:var(--dark);}
+        .pricing-card .price{font-size:2.5rem;font-weight:800;color:var(--primary);margin:1rem 0;}
+        .pricing-card .price span{font-size:1rem;color:var(--gray-500);font-weight:400;}
+        .pricing-features{text-align:left;margin:1.5rem 0;padding:0;}
+        .pricing-features li{padding:0.5rem 0 0.5rem 1.5rem;position:relative;color:var(--gray-500);font-size:0.9rem;border-bottom:1px solid var(--gray-100);}
+        .pricing-features li:last-child{border-bottom:none;}
+        .pricing-features li::before{content:'✓';position:absolute;left:0;color:var(--success);font-weight:700;}
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Home</a></li>
+                <li><a href="/services.html">Services</a></li>
+                <li><a href="/portfolio.html">Portfolio</a></li>
+                <li><a href="/about.html">About</a></li>
+                <li><a href="/pricing.html" class="active">Pricing</a></li>
+                <li><a href="/faq.html">FAQ</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+                <li class="auth-nav"><a href="#" id="loginBtn" class="btn btn-outline btn-sm">Sign In</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="page-header"><div class="container"><h1>Simple <span class="highlight">Pricing</span></h1><p>Transparent plans for every business size</p></div></section>
+
+    <section class="section">
+        <div class="container">
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <p style="color:var(--gray-500);font-size:0.9rem;">Perfect for small businesses</p>
+                    <div class="price">$999<span>/project</span></div>
+                    <ul class="pricing-features">
+                        <li>1 Service (Video OR Design OR Photo)</li>
+                        <li>Up to 2 revisions</li>
+                        <li>5-day delivery</li>
+                        <li>Source files included</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a href="/apply.html" class="btn btn-secondary btn-full">Get Started</a>
+                </div>
+                <div class="pricing-card popular">
+                    <h3>Professional</h3>
+                    <p style="color:var(--gray-500);font-size:0.9rem;">For growing businesses</p>
+                    <div class="price">$4,999<span>/project</span></div>
+                    <ul class="pricing-features">
+                        <li>Up to 3 services combined</li>
+                        <li>Unlimited revisions</li>
+                        <li>Priority delivery</li>
+                        <li>Dedicated account manager</li>
+                        <li>Strategy consultation</li>
+                        <li>Social media assets</li>
+                    </ul>
+                    <a href="/apply.html" class="btn btn-primary btn-full">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <p style="color:var(--gray-500);font-size:0.9rem;">Full-service partnership</p>
+                    <div class="price">Custom</div>
+                    <ul class="pricing-features">
+                        <li>All services included</li>
+                        <li>Ongoing retainer support</li>
+                        <li>Dedicated creative team</li>
+                        <li>Monthly strategy sessions</li>
+                        <li>Priority 24/7 support</li>
+                        <li>Performance reporting</li>
+                    </ul>
+                    <a href="/contact.html" class="btn btn-secondary btn-full">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section cta-section"><div class="container"><div class="cta-content"><h2>Need a Custom Package?</h2><p>Every business is unique. Let's create a tailored plan that fits your needs.</p><a href="/apply.html" class="btn btn-primary btn-lg">Request Custom Quote</a></div></div></section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand"><a href="/" class="logo"><span class="logo-icon">&#9670;</span> Manar <span class="logo-accent">Media</span></a><p>Professional media production and digital marketing services. Elevating brands since 2018.</p></div>
+                <div class="footer-links"><h4>Quick Links</h4><ul><li><a href="/">Home</a></li><li><a href="/services.html">Services</a></li><li><a href="/portfolio.html">Portfolio</a></li><li><a href="/about.html">About</a></li></ul></div>
+                <div class="footer-links"><h4>Services</h4><ul><li><a href="/services.html#video">Video Production</a></li><li><a href="/services.html#branding">Branding</a></li><li><a href="/services.html#photography">Photography</a></li><li><a href="/services.html#marketing">Digital Marketing</a></li></ul></div>
+                <div class="footer-links"><h4>Contact</h4><ul><li>info@manar.cloud-stacks.com</li><li>Cairo, Egypt</li><li>+20 123 456 7890</li><li><a href="/contact.html">Get in Touch</a></li></ul></div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2026 Manar Media. All rights reserved.</p></div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
