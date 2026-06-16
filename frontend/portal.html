@@ -17,8 +17,9 @@
         .profile-card{text-align:center;padding-bottom:1.5rem;border-bottom:1px solid var(--gray-200);margin-bottom:1.5rem;}
         .profile-avatar{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2.2rem;font-weight:800;color:#fff;background:var(--gradient);position:relative;cursor:pointer;transition:var(--transition);}
         .profile-avatar:hover{transform:scale(1.05);}
+        .profile-avatar:hover .avatar-edit{opacity:1;transform:scale(1);}
         .profile-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
-        .profile-avatar .avatar-edit{position:absolute;bottom:0;right:0;width:28px;height:28px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.7rem;border:2px solid var(--white);}
+        .profile-avatar .avatar-edit{position:absolute;bottom:0;right:0;width:28px;height:28px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.7rem;border:2px solid var(--white);opacity:0.85;transform:scale(0.95);transition:opacity 0.2s,transform 0.2s;}
         .profile-card h3{font-size:1.1rem;font-weight:700;color:var(--dark);margin-bottom:0.2rem;}
         .profile-card .profile-email{font-size:0.82rem;color:var(--gray-500);}
         .profile-card .profile-role{display:inline-block;margin-top:0.5rem;padding:0.15rem 0.7rem;border-radius:50px;font-size:0.72rem;font-weight:600;background:#dbeafe;color:#1e40af;}
@@ -197,10 +198,9 @@
                                 <div class="form-group"><label>Website</label><input type="url" id="profWebsite" placeholder="https://yoursite.com"></div>
                             </div>
                             <div class="form-group"><label>Bio</label><textarea id="profBio" placeholder="Tell us about yourself and what you do..." rows="4"></textarea></div>
-                            <div class="form-group">
+                            <div class="form-group" style="display:none;">
                                 <label for="profAvatarFile">Profile Photo</label>
                                 <input type="file" id="profAvatarFile" accept="image/*">
-                                <div class="avatar-upload-note">Upload a JPG, PNG, or WEBP image.</div>
                             </div>
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>&nbsp; Save Changes</button>
@@ -510,6 +510,10 @@
         bar.style.background = colors[strength - 1] || '#ef4444';
     }
 
+    document.getElementById('sidebarAvatar').addEventListener('click', () => {
+        document.getElementById('profAvatarFile').click();
+    });
+
     document.getElementById('profAvatarFile').addEventListener('change', e => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -522,9 +526,12 @@
         const reader = new FileReader();
         reader.onload = () => {
             pendingAvatarData = typeof reader.result === 'string' ? reader.result : '';
+            // Instantly preview on the sidebar avatar
+            const avatar = document.getElementById('sidebarAvatar');
+            avatar.innerHTML = `<img src="${pendingAvatarData}" alt="Avatar"><div class="avatar-edit"><i class="fas fa-camera"></i></div>`;
             const status = document.getElementById('profileStatus');
             status.className = 'profile-status success';
-            status.textContent = 'Photo selected. Click Save Changes to upload.';
+            status.textContent = 'Photo selected. Click Save Changes to apply.';
         };
         reader.readAsDataURL(file);
     });
