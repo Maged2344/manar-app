@@ -183,6 +183,7 @@
                 <div class="stat-card"><div class="stat-val" id="statContacts">-</div><div class="stat-lbl">Messages</div></div>
                 <div class="stat-card"><div class="stat-val" id="statToday">-</div><div class="stat-lbl">Visitors Today</div></div>
                 <div class="stat-card"><div class="stat-val" id="statTotal">-</div><div class="stat-lbl">Total Visits</div></div>
+                <div class="stat-card"><div class="stat-val" id="statRevenue">-</div><div class="stat-lbl">Paid Orders</div></div>
             </div>
 
             <!-- Navigation -->
@@ -191,6 +192,7 @@
                 <button data-panel="applications">Applications</button>
                 <button data-panel="messages">Messages</button>
                 <button data-panel="users">Users</button>
+                <button data-panel="payments">Payments</button>
                 <button data-panel="reach">Site Reach</button>
             </div>
 
@@ -261,6 +263,11 @@
                     <div class="reach-item"><div class="reach-val" id="reachAvg">-</div><div class="reach-lbl">Daily Average</div></div>
                 </div>
                 <div class="chart-section"><h3>Daily Visitors - Last 30 Days</h3><canvas id="reachChart"></canvas></div>
+            </div>
+
+            <!-- Payments Panel -->
+            <div class="tab-panel" id="panel-payments">
+                <div class="table-card"><h3>Payment Orders (Paymob)</h3><div id="paymentsTable"><p class="empty-state">Loading...</p></div></div>
             </div>
         </div>
     </div>
@@ -345,12 +352,13 @@
     async function loadDashboard(){
         const h={'Authorization':'Bearer '+token};
         try{
-            const[stats,apps,contacts,users,reach]=await Promise.all([
+            const[stats,apps,contacts,users,reach,payments]=await Promise.all([
                 fetch(API+'/admin/stats',{headers:h}).then(r=>r.json()),
                 fetch(API+'/admin/applications',{headers:h}).then(r=>r.json()),
                 fetch(API+'/contact',{headers:h}).then(r=>r.json()),
                 fetch(API+'/admin/users',{headers:h}).then(r=>r.json()),
-                fetch(API+'/admin/reach',{headers:h}).then(r=>r.json())
+                fetch(API+'/admin/reach',{headers:h}).then(r=>r.json()),
+                fetch(API+'/admin/payments',{headers:h}).then(r=>r.json()).catch(()=>[])
             ]);
             // Stats
             document.getElementById('statUsers').textContent=stats.totalUsers||0;
@@ -358,11 +366,13 @@
             document.getElementById('statContacts').textContent=stats.totalContacts||0;
             document.getElementById('statToday').textContent=stats.visitorsToday||0;
             document.getElementById('statTotal').textContent=stats.totalVisits||0;
+            const paidCount=(payments||[]).filter(p=>p.status==='paid').length;
+            document.getElementById('statRevenue').textContent=paidCount;
             // Tables
             allApps=apps;
             populateServiceFilter(apps);
             filterApplications();
-            renderMessages(contacts);renderUsers(users);
+            renderMessages(contacts);renderUsers(users);renderPayments(payments||[]);
             // Reach
             renderReach(reach);
             // Charts
@@ -652,6 +662,30 @@
             renderMessages(contacts);
             document.getElementById('statContacts').textContent=contacts.length;
         }catch(e){alert('Connection error while deleting message');}
+    }
+
+    function renderPayments(payments){
+        const c=document.getElementById('paymentsTable');
+        if(!payments.length){c.innerHTML='<p class="empty-state">No payments yet</p>';return;}
+        const totalPaid=payments.filter(p=>p.status==='paid').reduce((s,p)=>s+Math.round((p.amountCents||0)/100),0);
+        c.innerHTML=`
+            <div style="margin-bottom:1rem;padding:0.8rem 1rem;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200);display:flex;gap:2rem;font-size:0.85rem;">
+                <span><strong>Total Orders:</strong> ${payments.length}</span>
+                <span><strong>Paid:</strong> ${payments.filter(p=>p.status==='paid').length}</span>
+                <span><strong>Pending:</strong> ${payments.filter(p=>p.status==='pending').length}</span>
+                <span><strong>Failed:</strong> ${payments.filter(p=>p.status==='failed').length}</span>
+                <span style="color:var(--success);font-weight:700;"><strong>Total Revenue:</strong> ${totalPaid.toLocaleString()} EGP</span>
+            </div>
+            <table class="admin-table"><thead><tr><th>Customer</th><th>Plan</th><th>Amount</th><th>Status</th><th>Transaction ID</th><th>Date</th></tr></thead><tbody>
+            ${payments.map(p=>`<tr>
+                <td><strong>${esc(p.userName||'-')}</strong><div style="font-size:0.75rem;color:var(--gray-500);">${esc(p.userEmail||'')} ${p.userPhone?'· '+esc(p.userPhone):''}</div></td>
+                <td>${esc(p.planName||p.plan||'-')}</td>
+                <td>${p.amountCents?Math.round(p.amountCents/100).toLocaleString()+' EGP':'-'}</td>
+                <td><span class="badge badge-${p.status==='paid'?'approved':p.status==='failed'?'rejected':'reviewed'}">${p.status||'pending'}</span></td>
+                <td style="font-size:0.75rem;color:var(--gray-500);">${esc(p.paymobTransactionId||'-')}</td>
+                <td>${new Date(p.createdAt).toLocaleDateString()}</td>
+            </tr>`).join('')}
+            </tbody></table>`;
     }
 
     function renderUsers(users){

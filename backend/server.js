@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const promClient = require('prom-client');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -400,6 +401,166 @@ app.get('/api/services', (req, res) => {
     { id: 'web', title: 'Web Development', description: 'Modern websites that convert visitors.' },
     { id: 'content', title: 'Content Strategy', description: 'Strategic content planning for growth.' }
   ]);
+});
+
+// ===== Paymob Payment Gateway =====
+const PAYMOB_API_KEY       = process.env.PAYMOB_API_KEY || '';
+const PAYMOB_INTEGRATION_ID = parseInt(process.env.PAYMOB_INTEGRATION_ID || '0', 10);
+const PAYMOB_IFRAME_ID     = process.env.PAYMOB_IFRAME_ID || '';
+const PAYMOB_HMAC_SECRET   = process.env.PAYMOB_HMAC_SECRET || '';
+const SITE_URL             = process.env.SITE_URL || 'https://manar.cloud-stacks.com';
+
+const PAYMENT_PLANS = {
+  starter:      { name: 'Starter Plan',      amountCents: parseInt(process.env.STARTER_AMOUNT_CENTS      || '300000',  10) }, // default 3,000 EGP
+  professional: { name: 'Professional Plan', amountCents: parseInt(process.env.PRO_AMOUNT_CENTS          || '1500000', 10) }  // default 15,000 EGP
+};
+
+const paymentSchema = new mongoose.Schema({
+  plan:                 { type: String, required: true },
+  planName:             { type: String },
+  amountCents:          { type: Number },
+  paymobOrderId:        { type: String },
+  paymobTransactionId:  { type: String, default: '' },
+  status:               { type: String, default: 'pending' }, // pending | paid | failed
+  userEmail:            { type: String },
+  userName:             { type: String },
+  userPhone:            { type: String },
+  createdAt:            { type: Date, default: Date.now }
+});
+const Payment = mongoose.model('Payment', paymentSchema);
+
+// Initiate payment — calls Paymob in 3 steps and returns an iframe URL
+app.post('/api/payment/initiate', async (req, res) => {
+  try {
+    const { plan, name, email, phone } = req.body;
+    if (!plan || !name || !email || !phone)
+      return res.status(400).json({ error: 'Plan, name, email, and phone are required' });
+
+    const planConfig = PAYMENT_PLANS[plan];
+    if (!planConfig) return res.status(400).json({ error: 'Invalid plan selected' });
+
+    if (!PAYMOB_API_KEY || !PAYMOB_INTEGRATION_ID || !PAYMOB_IFRAME_ID)
+      return res.status(503).json({ error: 'Payment gateway is not configured yet. Please contact us directly.' });
+
+    // Step 1 — authenticate
+    const authRes  = await fetch('https://accept.paymob.com/api/auth/tokens', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: PAYMOB_API_KEY })
+    });
+    const authData = await authRes.json();
+    if (!authRes.ok || !authData.token)
+      return res.status(502).json({ error: 'Payment gateway authentication failed' });
+    const authToken = authData.token;
+
+    // Step 2 — create order
+    const orderRes  = await fetch('https://accept.paymob.com/api/ecommerce/orders', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth_token: authToken,
+        delivery_needed: false,
+        amount_cents: planConfig.amountCents,
+        currency: 'EGP',
+        items: [{ name: planConfig.name, amount_cents: planConfig.amountCents, description: planConfig.name, quantity: 1 }]
+      })
+    });
+    const orderData = await orderRes.json();
+    if (!orderRes.ok || !orderData.id)
+      return res.status(502).json({ error: 'Failed to create payment order' });
+
+    // Save pending record so we can link the webhook back
+    const payment = await Payment.create({
+      plan, planName: planConfig.name, amountCents: planConfig.amountCents,
+      paymobOrderId: String(orderData.id), userEmail: email, userName: name, userPhone: phone
+    });
+
+    // Step 3 — get payment key
+    const parts = name.trim().split(/\s+/);
+    const firstName = parts[0] || name;
+    const lastName  = parts.slice(1).join(' ') || 'N/A';
+    const payKeyRes  = await fetch('https://accept.paymob.com/api/acceptance/payment_keys', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth_token: authToken,
+        amount_cents: planConfig.amountCents,
+        expiration: 3600,
+        order_id: orderData.id,
+        billing_data: {
+          first_name: firstName, last_name: lastName,
+          email, phone_number: phone,
+          apartment: 'NA', floor: 'NA', street: 'NA', building: 'NA',
+          shipping_method: 'NA', postal_code: 'NA', city: 'Cairo', country: 'EG', state: 'NA'
+        },
+        currency: 'EGP',
+        integration_id: PAYMOB_INTEGRATION_ID
+      })
+    });
+    const payKeyData = await payKeyRes.json();
+    if (!payKeyRes.ok || !payKeyData.token)
+      return res.status(502).json({ error: 'Failed to generate payment token' });
+
+    const iframeUrl = `https://accept.paymob.com/api/acceptance/iframes/${PAYMOB_IFRAME_ID}?payment_token=${payKeyData.token}`;
+    res.json({ iframeUrl, paymentId: String(payment._id) });
+  } catch (e) {
+    console.error('Payment initiation error:', e);
+    res.status(500).json({ error: 'Payment initiation failed. Please try again.' });
+  }
+});
+
+// Paymob redirect callback (GET) — user lands here after paying
+app.get('/api/payment/callback', async (req, res) => {
+  try {
+    const success       = req.query.success === 'true';
+    const transactionId = req.query.id || '';
+    const orderId       = req.query.merchant_order_id || '';
+    if (orderId) {
+      await Payment.findOneAndUpdate(
+        { paymobOrderId: String(orderId) },
+        { paymobTransactionId: String(transactionId), status: success ? 'paid' : 'failed' }
+      );
+    }
+    res.redirect(`/payment-result.html?success=${success ? '1' : '0'}`);
+  } catch (e) {
+    res.redirect('/payment-result.html?success=0');
+  }
+});
+
+// Paymob HMAC webhook (POST) — authoritative payment confirmation
+app.post('/api/payment/webhook', async (req, res) => {
+  try {
+    if (PAYMOB_HMAC_SECRET && req.query.hmac) {
+      const txn = req.body.obj || {};
+      const fields = [
+        txn.amount_cents, txn.created_at, txn.currency,
+        txn.error_occured, txn.has_parent_transaction, req.body.id,
+        txn.integration_id, txn.is_3d_secure, txn.is_auth,
+        txn.is_capture, txn.is_refunded, txn.is_standalone_payment,
+        txn.is_voided, txn.order?.id, txn.owner,
+        txn.pending, txn.source_data?.pan,
+        txn.source_data?.sub_type, txn.source_data?.type, txn.success
+      ].map(v => (v == null ? '' : String(v)));
+      const computed = crypto.createHmac('sha512', PAYMOB_HMAC_SECRET).update(fields.join('')).digest('hex');
+      if (computed !== req.query.hmac) return res.status(403).json({ error: 'Invalid HMAC signature' });
+    }
+    const txn = req.body.obj || {};
+    if (txn.order?.id) {
+      await Payment.findOneAndUpdate(
+        { paymobOrderId: String(txn.order.id) },
+        { paymobTransactionId: String(txn.id || ''), status: txn.success === true ? 'paid' : 'failed' }
+      );
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('Webhook error:', e);
+    res.status(200).json({ ok: true }); // Always 200 so Paymob doesn't retry forever
+  }
+});
+
+// Admin: list payments
+app.get('/api/admin/payments', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const payments = await Payment.find().sort({ createdAt: -1 }).limit(200);
+    res.json(payments);
+  } catch (e) { res.status(500).json({ error: 'Failed to get payments' }); }
 });
 
 // Start
