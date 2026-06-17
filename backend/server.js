@@ -411,8 +411,8 @@ const PAYMOB_HMAC_SECRET   = process.env.PAYMOB_HMAC_SECRET || '';
 const SITE_URL             = process.env.SITE_URL || 'https://manar.cloud-stacks.com';
 
 const PAYMENT_PLANS = {
-  starter:      { name: 'Starter Plan',      amountCents: parseInt(process.env.STARTER_AMOUNT_CENTS      || '300000',  10) }, // default 3,000 EGP
-  professional: { name: 'Professional Plan', amountCents: parseInt(process.env.PRO_AMOUNT_CENTS          || '1500000', 10) }  // default 15,000 EGP
+  starter:      { name: 'Starter Plan',      amountCents: parseInt(process.env.STARTER_AMOUNT_CENTS      || '50000',  10) }, // default 500 EGP
+  professional: { name: 'Professional Plan', amountCents: parseInt(process.env.PRO_AMOUNT_CENTS          || '150000', 10) }  // default 1,500 EGP
 };
 
 const paymentSchema = new mongoose.Schema({
